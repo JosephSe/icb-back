@@ -1,0 +1,23 @@
+
+spring:
+  application:
+    name: icb
+  devtools:
+    livereload:
+      enabled=true:
+    restart:
+      enabled=true:
+
+logging:
+  level:
+    root: INFO
+    WEB: DEBUG
+    uk.go.hm: DEBUG
+
+server:
+  port: 8080
+  tomcat:
+    apr-lifecycle-listener:
+      enabled: false
+
+
