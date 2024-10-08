@@ -9,9 +9,6 @@ ICB Backend
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
 - [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ## Installation
 1. **Clone the repository:**
