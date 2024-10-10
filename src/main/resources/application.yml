@@ -1,7 +1,7 @@
 
 spring:
   application:
-    name: icb
+    name: icb-back
   devtools:
     livereload:
       enabled=true:
