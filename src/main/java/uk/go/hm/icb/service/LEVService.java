@@ -43,7 +43,7 @@ public class LEVService {
                 br.readLine(); // Skip header
                 while ((line = br.readLine()) != null) {
                     String[] values = line.split(",");
-                    records.add(new LEVRecord(values[0], values[1], values[2]));
+                    records.add(new LEVRecord(values[0], values[1], values[2], values[3], values[4], values[5]));
                 }
             }
         } catch (IOException e) {

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.Greeting;
+import uk.go.hm.icb.dto.ICBGenericRecord;
+import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.LEVRecord;
 import uk.go.hm.icb.service.DVLAService;
 import uk.go.hm.icb.service.LEVService;
@@ -34,15 +36,18 @@ public class WebSearchController {
     public void search(String lastName) {
         System.out.println("*****************");
         // Search in DVLAService
-        //List<DrivingLicenceRecord> dvlaResults = dvlaService.searchByLastName(lastName);
+        List<ICBResponse> dvlaResults = dvlaService.searchByLastName(lastName).stream()
+                .map(ICBResponse::new)
+                .toList();
+        
         //return dvlaResults;
 //        return new Greeting("Hello, " + HtmlUtils.htmlEscape(lastName) + "!");
-        messagingTemplate.convertAndSend("/topic/results", new Greeting("Hello, " + HtmlUtils.htmlEscape(lastName) + "!"));
+        messagingTemplate.convertAndSend("/topic/results", new Greeting(dvlaResults.toString()));
 
         // Search in LEVService after a delay
         CompletableFuture.runAsync(() -> {
             try {
-                Thread.sleep(20000); // Delay for 2 seconds
+                Thread.sleep(2000); // Delay for 2 seconds
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

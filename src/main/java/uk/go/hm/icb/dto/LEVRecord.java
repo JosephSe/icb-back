@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
-public class LEVRecord implements SearchDataType {
-    private String id;
-    private String lastName;
-    private String firstName;
+public class LEVRecord extends ICBGenericRecord implements SearchDataType {
+    private String birthCertificate;
+
+    public LEVRecord(String firstName, String middleName, String lastName, String dateOfBirth, String address, String birthCertificate) {
+        super(firstName, middleName, lastName, dateOfBirth, address);
+        this.birthCertificate = birthCertificate;
+    }
 }

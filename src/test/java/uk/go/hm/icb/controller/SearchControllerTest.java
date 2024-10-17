@@ -40,7 +40,7 @@ class SearchControllerTest {
         criteria.setLastName("Smith");
         searchRequest.setCriteria(criteria);
 
-        DrivingLicenceRecord driverInfo = new DrivingLicenceRecord("John", "Smith", "123456789");
+        DrivingLicenceRecord driverInfo = new DrivingLicenceRecord("John","A.","Doe","14-05-1990","123 Baker Street, London, NW1 6XE","D12345678");
         when(dvlaService.searchByLastName("Smith")).thenReturn(List.of(driverInfo));
 
         // Act
