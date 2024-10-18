@@ -29,4 +29,14 @@ public class ICBResponse {
         this.drivingLicenseNumber = licenceRecord.getDrivingLicenseNumber();
         this.searchSource = SearchSource.DVLA;
     }
+
+    public ICBResponse(LEVRecord levRecord) {
+        this.firstName = levRecord.getFirstName();
+        this.middleName = levRecord.getMiddleName();
+        this.lastName = levRecord.getLastName();
+        this.dateOfBirth = levRecord.getDateOfBirth();
+        this.address = levRecord.getAddress();
+        this.birthCertificate = levRecord.getBirthCertificate();
+        this.searchSource = SearchSource.LEV;
+    }
 }

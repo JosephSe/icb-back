@@ -39,9 +39,6 @@ public class WebSearchController {
         List<ICBResponse> dvlaResults = dvlaService.searchByLastName(lastName).stream()
                 .map(ICBResponse::new)
                 .toList();
-        
-        //return dvlaResults;
-//        return new Greeting("Hello, " + HtmlUtils.htmlEscape(lastName) + "!");
         messagingTemplate.convertAndSend("/topic/results", new Greeting(dvlaResults.toString()));
 
         // Search in LEVService after a delay
@@ -51,8 +48,10 @@ public class WebSearchController {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            //List<LEVRecord> levResults = levService.searchByLastName(lastName);
-            messagingTemplate.convertAndSend("/topic/results", new Greeting("Hello again from DVLA, " + HtmlUtils.htmlEscape(lastName) + "!"));
+            List<ICBResponse> levResults = levService.searchByLastName(lastName).stream()
+                    .map(ICBResponse::new)
+                    .toList();
+            messagingTemplate.convertAndSend("/topic/results", new Greeting(levResults.toString()));
         });
     }
 }
