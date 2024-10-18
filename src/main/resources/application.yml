@@ -10,13 +10,15 @@ spring:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
     WEB: DEBUG
     uk.go.hm: DEBUG
 
 server:
   port: 8080
+  connection-timeout: 5m
   tomcat:
+    keep-alive-timeout: 5m
     apr-lifecycle-listener:
       enabled: false
 

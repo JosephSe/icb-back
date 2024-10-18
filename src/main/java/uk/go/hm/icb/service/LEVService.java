@@ -14,17 +14,18 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
+import uk.go.hm.icb.dto.LEVRecord;
 
 @Service
-public class DVLAService {
+public class LEVService {
     
-    private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
-    private List<DrivingLicenceRecord> records;
+    private static final String CSV_FILE_PATH = "classpath:lev_records.csv";
+    private List<LEVRecord> records;
 
     private final ResourceLoader resourceLoader;
 
     @Autowired
-    public DVLAService(ResourceLoader resourceLoader) {
+    public LEVService(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
@@ -42,7 +43,7 @@ public class DVLAService {
                 br.readLine(); // Skip header
                 while ((line = br.readLine()) != null) {
                     String[] values = line.split(",");
-                    records.add(new DrivingLicenceRecord(values[0], values[1], values[2], values[3], values[4], values[5]));
+                    records.add(new LEVRecord(values[0], values[1], values[2], values[3], values[4], values[5]));
                 }
             }
         } catch (IOException e) {
@@ -50,7 +51,7 @@ public class DVLAService {
         }
     }
 
-    public List<DrivingLicenceRecord> searchByLastName(String lastName) {
+    public List<LEVRecord> searchByLastName(String lastName) {
         return records.stream()
                 .filter(record -> record.getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());

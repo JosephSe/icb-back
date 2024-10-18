@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.SearchRequest;
 import uk.go.hm.icb.dto.SearchResponse;
+import uk.go.hm.icb.service.DVLAService;
 import uk.go.hm.icb.service.LEVService;
 
 import java.util.logging.Level;
@@ -19,12 +22,12 @@ import java.util.logging.Level;
 public class SearchController {
 
     @Autowired
-    private LEVService dvlaService;
+    private DVLAService dvlaService;
 
     @PostMapping("/driver-search")
     public ResponseEntity<SearchResponse<?>> search(@RequestBody SearchRequest searchRequest) {
         log.log(Level.INFO, searchRequest.toString());
-        return ResponseEntity.ok(new SearchResponse(dvlaService.searchByLastName(searchRequest.getCriteria().getLastName())));
+        return ResponseEntity.ok(new SearchResponse<DrivingLicenceRecord>(dvlaService.searchByLastName(searchRequest.getCriteria().getLastName())));
     }
 }
 
