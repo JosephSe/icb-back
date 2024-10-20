@@ -57,6 +57,10 @@ public class DVLAService {
         }
     }
 
+    /**
+     * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
+     * filtering on other fields should also be added if they are in the input request
+     * */
     public ICBResponse search(ICBRequest request) {
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder();
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
