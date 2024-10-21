@@ -72,11 +72,11 @@ public class DVLAService {
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName()).map(f -> f.equalsIgnoreCase(rec.getMiddleName())).orElse(true))
                 .toList();
         if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder().firstNameMatched("YES").lastNameMatched("YES");
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder().firstNameMatched("YES").lastNameMatched("YES").verifications(List.of("Name Match - 100%", "DL Match - 100%"));
             DrivingLicenceRecord record = list.get(0);
             Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl->dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::drivingLicenseNumberMatched);
             Optional.ofNullable(record.getMiddleName()).map(mn->mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::middleNameMatched);
-            responseBuilder.match(matchBuilder.build()).verifications(List.of("Name Match - 100%", "DL Match - 100%"));
+            responseBuilder.match(matchBuilder.build());
         } else if (list.size() > 1) {
             responseBuilder.multiMatches(
             list.stream().map(rec -> ICBMultiMatch.builder().firstName(rec.getFirstName())

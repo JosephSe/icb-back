@@ -3,6 +3,8 @@ package uk.go.hm.icb.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class ICBMatch {
@@ -13,5 +15,5 @@ public class ICBMatch {
     private String addressMatched;
     private String birthCertificateMatched;
     private String drivingLicenseNumberMatched;
-
+    private List<String> verifications;
 }
