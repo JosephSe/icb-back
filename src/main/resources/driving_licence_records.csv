@@ -1,6 +1,7 @@
 firstName,middleName,lastName,dateOfBirth,address,drivingLicenseNumber
 John,A.,Doe,14-05-1990,"123 Baker Street London NW1 6XE",D12345678
 Jane,B.,Smith,23-11-1985,"456 High Street Manchester M1 2AB",D87654321
+Jane,B.,Smith,23-11-1980,"456 High Street Manchester M1 2AB",D87654322
 Emily,C.,Johnson,30-07-1992,"789 King Road Birmingham B1 1AA",D23456789
 Michael,D.,Brown,12-03-1988,"101 Queen Avenue Liverpool L1 1AA",D34567890
 Sarah,E.,Davis,05-09-1995,"202 Prince Street Leeds LS1 1AA",D45678901
