@@ -41,6 +41,7 @@ public class WebSearchController {
      * test with the below 2 json in the name field
      * {"searchSources":["DVLA"], "searchBioDetails":{"firstName":"jane","lastName":"smith"}}
      * {"searchSources":["DVLA"], "searchIDTypes":[{"searchSource":"DVLA","searchIDType":"DRIVER_LICENSE","value":"D87654322"}], "searchBioDetails":{"firstName":"jane","lastName":"smith"}}
+     * {"searchSources":["DVLA", "LEV"], "searchIDTypes":[{"searchSource":"DVLA","searchIDType":"DRIVER_LICENSE","value":"D87654322"}, {"searchSource":"LEV","searchIDType":"BIRTH_CERTIFICATE","value":"BCN87654321"}], "searchBioDetails":{"firstName":"jane","lastName":"smith"}}
      * */
     @MessageMapping("/search")
     public void search(ICBRequest icbRequest, StompHeaderAccessor headerAccessor) throws JsonProcessingException {
@@ -57,16 +58,18 @@ public class WebSearchController {
             });
         }
         // Search in LEVService after a delay
-//        CompletableFuture.runAsync(() -> {
-//            try {
-//                Thread.sleep(2000); // Delay for 2 seconds
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-//            List<ICBResponse> levResults = levService.searchByLastName(lastName).stream()
-//                    .map(ICBResponse::new)
-//                    .toList();
-//            messagingTemplate.convertAndSend("/topic/results", new Greeting(levResults.toString()));
-//        });
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(2000); // Delay for 2 seconds
+                if (icbRequest.getSearchSources().contains(SearchSource.LEV)) {
+                    ICBResponse response = levService.search(icbRequest);
+                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", new Greeting(objectMapper.writeValueAsString(response)), createHeaders(sessionId));
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

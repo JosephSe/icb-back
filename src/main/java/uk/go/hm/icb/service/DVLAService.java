@@ -24,7 +24,7 @@ import uk.go.hm.icb.dto.SearchIdentifiers;
 
 @Service
 public class DVLAService {
-    
+
     private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
     private List<DrivingLicenceRecord> records;
 
@@ -60,29 +60,56 @@ public class DVLAService {
     /**
      * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
      * filtering on other fields should also be added if they are in the input request
-     * */
+     */
     public ICBResponse search(ICBRequest request) {
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder();
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
                 .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getSearchIDType()).findFirst();
-        List<DrivingLicenceRecord> list = records.stream().filter(rec -> searchDLIdentifiers.map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
+        List<DrivingLicenceRecord> list = records.stream()
+                .filter(rec -> searchDLIdentifiers
+                        .map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber()))
+                        .orElse(true)
                 )
-                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getFirstName()).map(f -> f.equalsIgnoreCase(rec.getFirstName())).orElse(false))
-                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName()).map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
-                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName()).map(f -> f.equalsIgnoreCase(rec.getMiddleName())).orElse(true))
+                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getFirstName())
+                        .map(f -> f.equalsIgnoreCase(rec.getFirstName()))
+                        .orElse(false))
+                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName())
+                        .map(f -> f.equalsIgnoreCase(rec.getLastName()))
+                        .orElse(false))
+                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName())
+                        .map(f -> f.equalsIgnoreCase(rec.getMiddleName()))
+                        .orElse(true))
                 .toList();
         if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder().firstNameMatched("YES").lastNameMatched("YES").verifications(List.of("Name Match - 100%", "DL Match - 100%"));
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
+                    .firstNameMatched("YES")
+                    .lastNameMatched("YES")
+                    .verifications(List.of("Name Match - 100%", "DL Match - 100%"));
+
             DrivingLicenceRecord record = list.get(0);
-            Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl->dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::drivingLicenseNumberMatched);
-            Optional.ofNullable(record.getMiddleName()).map(mn->mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::middleNameMatched);
+            Optional.ofNullable(record.getDrivingLicenseNumber())
+                    .map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers
+                            .map(SearchIdentifiers::getValue)
+                            .orElse("")))
+                    .map(b -> b ? "YES" : "NO")
+                    .ifPresent(matchBuilder::drivingLicenseNumberMatched);
+
+            Optional.ofNullable(record.getMiddleName())
+                    .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName()))
+                    .map(b -> b ? "YES" : "NO")
+                    .ifPresent(matchBuilder::middleNameMatched);
+
             responseBuilder.match(matchBuilder.build());
         } else if (list.size() > 1) {
             responseBuilder.multiMatches(
-            list.stream().map(rec -> ICBMultiMatch.builder().firstName(rec.getFirstName())
-                    .lastName(rec.getLastName()).middleName(rec.getMiddleName())
-                    .dateOfBirth(rec.getDateOfBirth()).address(rec.getAddress())
-                    .build()).toList());
+                    list.stream().map(rec -> ICBMultiMatch.builder()
+                            .firstName(rec.getFirstName())
+                            .lastName(rec.getLastName())
+                            .middleName(rec.getMiddleName())
+                            .dateOfBirth(rec.getDateOfBirth())
+                            .address(rec.getAddress())
+                            .build())
+                            .toList());
         }
         return responseBuilder.searchComplete(true).build();
     }
