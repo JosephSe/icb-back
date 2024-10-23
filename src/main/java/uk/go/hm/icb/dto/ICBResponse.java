@@ -5,8 +5,9 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class ICBResponse {
+    private final SearchSource searchSource;
     private final Boolean searchComplete;
     private final ICBMatch match;
     private final List<ICBMultiMatch> multiMatches;

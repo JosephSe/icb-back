@@ -3,6 +3,7 @@ package uk.go.hm.icb.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.util.Pair;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -11,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import uk.go.hm.icb.dto.Greeting;
+import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchSource;
@@ -49,12 +51,13 @@ public class WebSearchController {
         if (icbRequest.getSearchSources().contains(SearchSource.DVLA)) {
         CompletableFuture.runAsync(() -> {
                 try {
+                    Thread.sleep(1000);
                     ICBResponse response = dvlaService.search(icbRequest);
-                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", new Greeting(objectMapper.writeValueAsString(response)), createHeaders(sessionId));
-                } catch (JsonProcessingException e) {
+                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
+                } catch (JsonProcessingException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            });
+        });
         }
         // Search in LEVService after a delay
 //        CompletableFuture.runAsync(() -> {

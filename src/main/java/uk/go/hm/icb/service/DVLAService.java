@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -21,6 +22,7 @@ import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchIDType;
 import uk.go.hm.icb.dto.SearchIdentifiers;
+import uk.go.hm.icb.dto.SearchSource;
 
 @Service
 public class DVLAService {
@@ -62,7 +64,7 @@ public class DVLAService {
      * filtering on other fields should also be added if they are in the input request
      * */
     public ICBResponse search(ICBRequest request) {
-        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder();
+        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
                 .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getSearchIDType()).findFirst();
         List<DrivingLicenceRecord> list = records.stream().filter(rec -> searchDLIdentifiers.map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
@@ -72,10 +74,12 @@ public class DVLAService {
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName()).map(f -> f.equalsIgnoreCase(rec.getMiddleName())).orElse(true))
                 .toList();
         if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder().firstNameMatched("YES").lastNameMatched("YES").verifications(List.of("Name Match - 100%", "DL Match - 100%"));
-            DrivingLicenceRecord record = list.get(0);
-            Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl->dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::drivingLicenseNumberMatched);
-            Optional.ofNullable(record.getMiddleName()).map(mn->mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::middleNameMatched);
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
+                    .matches("YES", "YES", "NO", "YES", "YES", "-", "YES")
+                    .verifications("Name Match - 100%").verifications("DL Match - 100%");
+//            DrivingLicenceRecord record = list.get(0);
+//            Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl->dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::drivingLicenseNumberMatched);
+//            Optional.ofNullable(record.getMiddleName()).map(mn->mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::middleNameMatched);
             responseBuilder.match(matchBuilder.build());
         } else if (list.size() > 1) {
             responseBuilder.multiMatches(
