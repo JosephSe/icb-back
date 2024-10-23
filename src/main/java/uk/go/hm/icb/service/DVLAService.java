@@ -75,11 +75,11 @@ public class DVLAService {
                 .toList();
         if (list.size() == 1) {
             ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
-                    .matches("YES", "YES", "NO", "YES", "YES", "-", "YES")
-                    .verifications("Name Match - 100%").verifications("DL Match - 100%");
-//            DrivingLicenceRecord record = list.get(0);
-//            Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl->dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::drivingLicenseNumberMatched);
-//            Optional.ofNullable(record.getMiddleName()).map(mn->mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b-> b ? "YES" : "NO").ifPresent(matchBuilder::middleNameMatched);
+                    .verification("Name Match - 100%").verification("DL Match - 100%");
+            DrivingLicenceRecord record = list.get(0);
+            String dlMatched = Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b -> b ? "YES" : "NO").orElse("-");
+            String middleNameMatched = Optional.ofNullable(record.getMiddleName()).map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b -> b ? "YES" : "NO").orElse("-");
+            matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", "-", dlMatched);
             responseBuilder.match(matchBuilder.build());
         } else if (list.size() > 1) {
             responseBuilder.multiMatches(

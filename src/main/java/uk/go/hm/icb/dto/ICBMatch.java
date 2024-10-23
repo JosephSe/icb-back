@@ -27,7 +27,7 @@ public class ICBMatch {
             return this;
         }
 
-        public ICBMatchBuilder verifications(String verification) {
+        public ICBMatchBuilder verification(String verification) {
             if (verifications == null) {
                 verifications = new ArrayList<>();
             }
