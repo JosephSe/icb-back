@@ -10,8 +10,8 @@ spring:
 
 logging:
   level:
-    root: DEBUG
-    WEB: DEBUG
+    root: INFO
+    WEB: INFO
     uk.go.hm: DEBUG
 
 server:

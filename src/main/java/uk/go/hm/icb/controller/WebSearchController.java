@@ -3,7 +3,6 @@ package uk.go.hm.icb.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.data.util.Pair;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -11,13 +10,12 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import uk.go.hm.icb.dto.Greeting;
 import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchSource;
-import uk.go.hm.icb.service.DVLAService;
-import uk.go.hm.icb.service.LEVService;
+import uk.go.hm.icb.service.dvla.DVLAService;
+import uk.go.hm.icb.service.lev.LEVService;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -63,14 +61,8 @@ public class WebSearchController {
             // Search in LEVService after a delay
             CompletableFuture.runAsync(() -> {
                 try {
-                    Thread.sleep(10000); // Delay for 10 seconds
-                    ICBResponse response = dvlaService.search(icbRequest);
-                    ICBResponse.ICBResponseBuilder responseBuilder = response.toBuilder();
-                    ICBMatch match = ICBMatch.builder()
-                            .matches("YES", "YES", "NO", "YES", "YES", "NO", "NO")
-                            .verification("Name Match - 100%").verification("Birth Cert Match - 100%")
-                            .build();
-                    response = responseBuilder.searchSource(SearchSource.LEV).match(match).build();
+                    Thread.sleep(5000); // Delay for 1 seconds
+                    ICBResponse response = levService.search(icbRequest);
                     simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
