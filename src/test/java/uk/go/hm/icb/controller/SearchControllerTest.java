@@ -11,7 +11,7 @@ import uk.go.hm.icb.dto.Criteria;
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.SearchRequest;
 import uk.go.hm.icb.dto.SearchResponse;
-import uk.go.hm.icb.service.DVLAService;
+import uk.go.hm.icb.service.dvla.DVLAService;
 
 import java.util.List;
 

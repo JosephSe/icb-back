@@ -1,0 +1,81 @@
+package uk.go.hm.icb.service.lev;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import uk.go.hm.icb.dto.ICBMatch;
+import uk.go.hm.icb.dto.ICBMultiMatch;
+import uk.go.hm.icb.dto.ICBRequest;
+import uk.go.hm.icb.dto.ICBResponse;
+import uk.go.hm.icb.dto.LEVRecord;
+import uk.go.hm.icb.dto.SearchIDType;
+import uk.go.hm.icb.dto.SearchIdentifiers;
+import uk.go.hm.icb.dto.SearchSource;
+
+@Service
+public class LEVService {
+
+    private final LevDataLoaderService dataLoaderService;
+
+    @Autowired
+    public LEVService(LevDataLoaderService dataLoaderService) {
+        this.dataLoaderService = dataLoaderService;
+    }
+
+    public List<LEVRecord> searchByLastName(String lastName) {
+        return dataLoaderService.getRecords().stream()
+                .filter(record -> record.getLastName().equalsIgnoreCase(lastName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * filter on LEV records last names
+     * */
+    public ICBResponse search(ICBRequest request) {
+        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.LEV);
+        Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
+                .stream().filter(t -> SearchIDType.BIRTH_CERTIFICATE == t.getSearchIDType())
+                .findFirst();
+        List<LEVRecord> list = dataLoaderService.getRecords().stream()
+                .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName())
+                        .map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
+                .toList();
+
+        if (list.size() == 1) {
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
+                    .verification("One result found.");
+            LEVRecord record = list.getFirst();
+            String levMatched = Optional.ofNullable(record.getBirthCertificate())
+                    .map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers
+                            .map(SearchIdentifiers::getValue)
+                            .orElse("")))
+                    .map(b -> b ? "YES" : "NO")
+                    .orElse("-");
+
+            String middleNameMatched = Optional.ofNullable(record.getMiddleName())
+                    .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName()))
+                    .map(b -> b ? "YES" : "NO")
+                    .orElse("-");
+
+            matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", levMatched, "-");
+            responseBuilder.match(matchBuilder.build());
+        } else if (list.size() > 1) {
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
+                    .verification("Multiple results found.");
+            responseBuilder.multiMatches(
+                    list.stream().map(rec -> ICBMultiMatch.builder()
+                            .firstName(rec.getFirstName())
+                            .lastName(rec.getLastName())
+                            .middleName(rec.getMiddleName())
+                            .dateOfBirth(rec.getDateOfBirth())
+                            .address(rec.getAddress())
+                            .build()).toList());
+        }
+        return responseBuilder.searchComplete(true).build();
+    }
+
+}

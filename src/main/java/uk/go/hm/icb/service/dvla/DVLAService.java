@@ -1,20 +1,12 @@
-package uk.go.hm.icb.service;
+package uk.go.hm.icb.service.dvla;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBMultiMatch;
@@ -28,35 +20,12 @@ import uk.go.hm.icb.dto.SearchSource;
 public class DVLAService {
     
     private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
-    private List<DrivingLicenceRecord> records;
 
-    private final ResourceLoader resourceLoader;
+    private final DrivingLicenceDataLoader recordLoader;
 
     @Autowired
-    public DVLAService(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
-    }
-
-    @PostConstruct
-    public void init() {
-        loadRecords();
-    }
-
-    private void loadRecords() {
-        records = new ArrayList<>();
-        try {
-            Resource resource = resourceLoader.getResource(CSV_FILE_PATH);
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                String line;
-                br.readLine(); // Skip header
-                while ((line = br.readLine()) != null) {
-                    String[] values = line.split(",");
-                    records.add(new DrivingLicenceRecord(values[0], values[1], values[2], values[3], values[4], values[5]));
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error loading driving licence records", e);
-        }
+    public DVLAService(DrivingLicenceDataLoader recordLoader) {
+        this.recordLoader = recordLoader;
     }
 
     /**
@@ -64,35 +33,37 @@ public class DVLAService {
      * filtering on other fields should also be added if they are in the input request
      * */
     public ICBResponse search(ICBRequest request) {
+        ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
                 .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getSearchIDType()).findFirst();
-        List<DrivingLicenceRecord> list = records.stream().filter(rec -> searchDLIdentifiers.map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
+        List<DrivingLicenceRecord> list = recordLoader.getRecords().stream().filter(rec -> searchDLIdentifiers.map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
                 )
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getFirstName()).map(f -> f.equalsIgnoreCase(rec.getFirstName())).orElse(false))
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName()).map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName()).map(f -> f.equalsIgnoreCase(rec.getMiddleName())).orElse(true))
                 .toList();
         if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
-                    .verification("Name Match - 100%").verification("DL Match - 100%");
+            matchBuilder.verification("One result found.");
             DrivingLicenceRecord record = list.get(0);
             String dlMatched = Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b -> b ? "YES" : "NO").orElse("-");
             String middleNameMatched = Optional.ofNullable(record.getMiddleName()).map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b -> b ? "YES" : "NO").orElse("-");
             matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", "-", dlMatched);
             responseBuilder.match(matchBuilder.build());
         } else if (list.size() > 1) {
+            matchBuilder.verification("Multiple results found.");
             responseBuilder.multiMatches(
             list.stream().map(rec -> ICBMultiMatch.builder().firstName(rec.getFirstName())
                     .lastName(rec.getLastName()).middleName(rec.getMiddleName())
                     .dateOfBirth(rec.getDateOfBirth()).address(rec.getAddress())
                     .build()).toList());
+            responseBuilder.match(matchBuilder.build());
         }
         return responseBuilder.searchComplete(true).build();
     }
 
     public List<DrivingLicenceRecord> searchByLastName(String lastName) {
-        return records.stream()
+        return recordLoader.getRecords().stream()
                 .filter(record -> record.getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
     }

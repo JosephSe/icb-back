@@ -1,31 +1,33 @@
-package uk.go.hm.icb.service;
+// CsvLoaderService.java
+package uk.go.hm.icb.service.lev;
+
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import uk.go.hm.icb.dto.LEVRecord;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Service;
+@Component
+public class LevDataLoaderService {
 
-import jakarta.annotation.PostConstruct;
-import uk.go.hm.icb.dto.DrivingLicenceRecord;
-import uk.go.hm.icb.dto.LEVRecord;
-
-@Service
-public class LEVService {
-    
     private static final String CSV_FILE_PATH = "classpath:lev_records.csv";
-    private List<LEVRecord> records;
+
+    @Getter
+    private final List<LEVRecord> records = new ArrayList<>();
 
     private final ResourceLoader resourceLoader;
 
     @Autowired
-    public LEVService(ResourceLoader resourceLoader) {
+    public LevDataLoaderService(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
@@ -35,7 +37,6 @@ public class LEVService {
     }
 
     private void loadRecords() {
-        records = new ArrayList<>();
         try {
             Resource resource = resourceLoader.getResource(CSV_FILE_PATH);
             try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
@@ -49,12 +50,6 @@ public class LEVService {
         } catch (IOException e) {
             throw new RuntimeException("Error loading driving licence records", e);
         }
-    }
-
-    public List<LEVRecord> searchByLastName(String lastName) {
-        return records.stream()
-                .filter(record -> record.getLastName().equalsIgnoreCase(lastName))
-                .collect(Collectors.toList());
     }
 
 }

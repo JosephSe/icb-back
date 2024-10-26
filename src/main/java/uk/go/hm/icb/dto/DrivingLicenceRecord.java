@@ -1,8 +1,10 @@
 package uk.go.hm.icb.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class DrivingLicenceRecord extends ICBGenericRecord implements SearchDataType {
     private String drivingLicenseNumber;
 
