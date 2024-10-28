@@ -48,7 +48,7 @@ public class LEVService {
         if (list.size() == 1) {
             ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
                     .verification("One result found.");
-            LEVRecord record = list.getFirst();
+            LEVRecord record = list.get(0);
             String levMatched = Optional.ofNullable(record.getBirthCertificate())
                     .map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers
                             .map(SearchIdentifiers::getValue)
