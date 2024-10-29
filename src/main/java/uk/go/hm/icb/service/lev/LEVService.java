@@ -45,9 +45,10 @@ public class LEVService {
                         .map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
                 .toList();
 
-        if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
-                    .verification("One result found.");
+        if (list.isEmpty()) {
+            responseBuilder.matchStatus("No match found");
+        } else if (list.size() == 1) {
+            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
             LEVRecord record = list.get(0);
             String levMatched = Optional.ofNullable(record.getBirthCertificate())
                     .map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers
@@ -62,11 +63,10 @@ public class LEVService {
                     .orElse("-");
 
             matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", levMatched, "-");
-            responseBuilder.match(matchBuilder.build());
-        } else if (list.size() > 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder()
-                    .verification("Multiple results found.");
-            responseBuilder.multiMatches(
+            responseBuilder.matchStatus("One match found").match(matchBuilder.build());
+        } else {
+            responseBuilder.matchStatus("Multiple matches found")
+                    .multiMatches(
                     list.stream().map(rec -> ICBMultiMatch.builder()
                             .firstName(rec.getFirstName())
                             .lastName(rec.getLastName())

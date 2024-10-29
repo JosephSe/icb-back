@@ -43,16 +43,16 @@ public class DVLAService {
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName()).map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getMiddleName()).map(f -> f.equalsIgnoreCase(rec.getMiddleName())).orElse(true))
                 .toList();
-        if (list.size() == 1) {
-            matchBuilder.verification("One result found.");
+        if (list.isEmpty()) {
+            responseBuilder.matchStatus("No match found");
+        } else if (list.size() == 1) {
             DrivingLicenceRecord record = list.get(0);
             String dlMatched = Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b -> b ? "YES" : "NO").orElse("-");
             String middleNameMatched = Optional.ofNullable(record.getMiddleName()).map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b -> b ? "YES" : "NO").orElse("-");
             matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", "-", dlMatched);
-            responseBuilder.match(matchBuilder.build());
-        } else if (list.size() > 1) {
-            matchBuilder.verification("Multiple results found.");
-            responseBuilder.multiMatches(
+            responseBuilder.matchStatus("One match found").match(matchBuilder.build());
+        } else {
+            responseBuilder.matchStatus("Multiple matches found").multiMatches(
             list.stream().map(rec -> ICBMultiMatch.builder().firstName(rec.getFirstName())
                     .lastName(rec.getLastName()).middleName(rec.getMiddleName())
                     .dateOfBirth(rec.getDateOfBirth()).address(rec.getAddress())
