@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class SearchIdentifiers {
     private SearchSource searchSource;
-    private SearchIDType searchIDType;
-    private String value;
+    private SearchIDType idType;
+    private String idValue;
 }

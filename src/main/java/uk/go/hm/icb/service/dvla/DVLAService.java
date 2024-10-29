@@ -36,8 +36,8 @@ public class DVLAService {
         ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
-                .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getSearchIDType()).findFirst();
-        List<DrivingLicenceRecord> list = recordLoader.getRecords().stream().filter(rec -> searchDLIdentifiers.map(si -> si.getValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
+                .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getIdType()).findFirst();
+        List<DrivingLicenceRecord> list = recordLoader.getRecords().stream().filter(rec -> searchDLIdentifiers.map(si -> si.getIdValue().equalsIgnoreCase(rec.getDrivingLicenseNumber())).orElse(true)
                 )
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getFirstName()).map(f -> f.equalsIgnoreCase(rec.getFirstName())).orElse(false))
                 .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName()).map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
@@ -47,7 +47,7 @@ public class DVLAService {
             responseBuilder.matchStatus("No match found");
         } else if (list.size() == 1) {
             DrivingLicenceRecord record = list.get(0);
-            String dlMatched = Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getValue).orElse(""))).map(b -> b ? "YES" : "NO").orElse("-");
+            String dlMatched = Optional.ofNullable(record.getDrivingLicenseNumber()).map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers.map(SearchIdentifiers::getIdValue).orElse(""))).map(b -> b ? "YES" : "NO").orElse("-");
             String middleNameMatched = Optional.ofNullable(record.getMiddleName()).map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName())).map(b -> b ? "YES" : "NO").orElse("-");
             matchBuilder.matches("YES", "YES", middleNameMatched, "YES", "YES", "-", dlMatched);
             responseBuilder.matchStatus("One match found").match(matchBuilder.build());
