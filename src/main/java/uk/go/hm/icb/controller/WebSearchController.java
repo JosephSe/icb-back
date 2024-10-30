@@ -61,7 +61,7 @@ public class WebSearchController {
             // Search in LEVService after a delay
             CompletableFuture.runAsync(() -> {
                 try {
-                    Thread.sleep(5000); // Delay for 1 seconds
+                    Thread.sleep(1000); // Delay for 1 seconds
                     ICBResponse response = levService.search(icbRequest);
                     simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
                 } catch (InterruptedException e) {
