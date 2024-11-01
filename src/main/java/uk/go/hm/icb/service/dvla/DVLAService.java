@@ -21,10 +21,10 @@ public class DVLAService {
     
     private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
 
-    private final DrivingLicenceDataLoader recordLoader;
+    private final DVLADataLoader recordLoader;
 
     @Autowired
-    public DVLAService(DrivingLicenceDataLoader recordLoader) {
+    public DVLAService(DVLADataLoader recordLoader) {
         this.recordLoader = recordLoader;
     }
 
