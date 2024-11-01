@@ -3,14 +3,21 @@ package uk.go.hm.icb.service.dvla;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.go.hm.icb.dto.*;
+import uk.go.hm.icb.dto.DrivingLicenceRecord;
+import uk.go.hm.icb.dto.ICBRequest;
+import uk.go.hm.icb.dto.ICBResponse;
+import uk.go.hm.icb.dto.SearchBioDetails;
+import uk.go.hm.icb.dto.SearchIDType;
+import uk.go.hm.icb.dto.SearchIdentifiers;
+import uk.go.hm.icb.dto.SearchSource;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -19,14 +26,13 @@ class DVLAServiceTest {
     @Mock
     private DVLADataLoader mockDataLoader;
 
-    @InjectMocks
     private DVLAService dvlaService;
     private TestDVLADataLoader dataLoader;
 
     @BeforeEach
     void setUp() {
         dataLoader = new TestDVLADataLoader();
-        dvlaService = new DVLAService(mockDataLoader);
+        dvlaService = new DVLAService(mockDataLoader, 0L);
     }
 
     @Test

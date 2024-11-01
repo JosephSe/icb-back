@@ -1,48 +1,50 @@
 package uk.go.hm.icb.service.dvla;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import org.springframework.util.StringUtils;
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBMultiMatch;
 import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
-import uk.go.hm.icb.dto.LEVRecord;
-import uk.go.hm.icb.dto.SearchBioDetails;
 import uk.go.hm.icb.dto.SearchIDType;
 import uk.go.hm.icb.dto.SearchIdentifiers;
 import uk.go.hm.icb.dto.SearchSource;
+import uk.go.hm.icb.service.SearchStrategy;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class DVLAService {
+public class DVLAService implements SearchStrategy {
+    
+    private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
 
     private final DVLADataLoader recordLoader;
 
+    private final long delay;
+
     @Autowired
-    public DVLAService(DVLADataLoader recordLoader) {
+    public DVLAService(DVLADataLoader recordLoader, @Value("${app.dvla.delay}") long delay) {
         this.recordLoader = recordLoader;
+        this.delay = delay;
     }
 
     /**
      * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
      * filtering on other fields should also be added if they are in the input request
      * */
+    @Override
     public ICBResponse search(ICBRequest request) {
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
-                .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getIdType()).filter(t-> StringUtils.hasText(t.getIdValue()))
+                .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
                 .findFirst();
         List<DrivingLicenceRecord> dvlaRecords = recordLoader.getRecords();
         List<DrivingLicenceRecord> list;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         if (searchDLIdentifiers.isPresent()) {
             list = dvlaRecords.stream()
                     .filter(rec -> searchDLIdentifiers
@@ -68,7 +70,7 @@ public class DVLAService {
                             .orElse("")))
                     .map(b -> b ? "YES" : "NO")
                     .orElse("-");
-            if(dvlaMatched.equals("NO")) {
+            if (dvlaMatched.equals("NO")) {
                 lastNameMatched = Optional.ofNullable(record.getLastName())
                         .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getLastName()))
                         .map(b -> b ? "YES" : "NO")
@@ -90,6 +92,12 @@ public class DVLAService {
         }
         return responseBuilder.searchComplete(true).build();
     }
+
+    @Override
+    public long getDelay() {
+        return delay;
+    }
+
     public List<DrivingLicenceRecord> searchByLastName(String lastName) {
         return recordLoader.getRecords().stream()
                 .filter(record -> record.getLastName().equalsIgnoreCase(lastName))

@@ -23,3 +23,8 @@ server:
       enabled: false
 
 
+app:
+  dvla:
+    delay: 2000
+  lev:
+    delay: 5000

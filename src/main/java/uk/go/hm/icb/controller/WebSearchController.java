@@ -3,6 +3,7 @@ package uk.go.hm.icb.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -10,13 +11,14 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchSource;
+import uk.go.hm.icb.service.SearchStrategy;
 import uk.go.hm.icb.service.dvla.DVLAService;
 import uk.go.hm.icb.service.lev.LEVService;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -24,10 +26,24 @@ import java.util.concurrent.CompletableFuture;
 @AllArgsConstructor
 public class WebSearchController {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final DVLAService dvlaService;
     private final LEVService levService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    final String resultsTopic = "/topic/results";
+    private Map<SearchSource, SearchStrategy> searchStrategies;
+
+    @Autowired
+    public WebSearchController(DVLAService dvlaService, LEVService levService, SimpMessagingTemplate simpMessagingTemplate) {
+        this.dvlaService = dvlaService;
+        this.levService = levService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        searchStrategies = Map.of(
+                SearchSource.DVLA, dvlaService,
+                SearchSource.LEV, levService,
+                SearchSource.IPCS, dvlaService
+        );
+    }
 
     private MessageHeaders createHeaders(String sessionId) {
         SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor
@@ -41,55 +57,31 @@ public class WebSearchController {
      * test with the below 2 json in the name field
      * {"searchSources":["DVLA"], "searchBioDetails":{"firstName":"jane","lastName":"smith"}}
      * {"searchSources":["DVLA"], "searchIDTypes":[{"searchSource":"DVLA","searchIDType":"DRIVER_LICENSE","value":"D87654322"}], "searchBioDetails":{"firstName":"jane","lastName":"smith"}}
-     * */
+     */
     @MessageMapping("/search")
-    public void search(ICBRequest icbRequest, StompHeaderAccessor headerAccessor) throws JsonProcessingException {
+    public void search(ICBRequest icbRequest, StompHeaderAccessor headerAccessor) {
         final String sessionId = headerAccessor.getSessionId();
-        // Search in DVLAService
-        if (icbRequest.getSearchSources().contains(SearchSource.DVLA)) {
+
+        icbRequest.getSearchSources().stream()
+                .filter(searchStrategies::containsKey)
+                .forEach(source -> executeSearch(searchStrategies.get(source), icbRequest, sessionId));
+    }
+
+    private void executeSearch(SearchStrategy strategy, ICBRequest request, String sessionId) {
         CompletableFuture.runAsync(() -> {
-                try {
-                    Thread.sleep(1000);
-                    ICBResponse response = dvlaService.search(icbRequest);
-                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
-                } catch (JsonProcessingException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+            try {
+                Thread.sleep(strategy.getDelay());
+                ICBResponse response = strategy.search(request);
+                sendResponse(response, sessionId, resultsTopic);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         });
-        }
-        if (icbRequest.getSearchSources().contains(SearchSource.LEV)) {
-            // Search in LEVService after a delay
-            CompletableFuture.runAsync(() -> {
-                try {
-                    Thread.sleep(1000); // Delay for 1 seconds
-                    ICBResponse response = levService.search(icbRequest);
-                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-        if (icbRequest.getSearchSources().contains(SearchSource.IPCS)) {
-            // Search in LEVService after a delay
-            CompletableFuture.runAsync(() -> {
-                try {
-                    Thread.sleep(5000); // Delay for 10 seconds
-                    ICBResponse response = dvlaService.search(icbRequest);
-                    ICBResponse.ICBResponseBuilder responseBuilder = response.toBuilder();
-                    ICBMatch match = ICBMatch.builder()
-                            .matches("YES", "YES", "NO", "YES", "YES", "-", "-")
-                            .verification("Name Match - 100%").verification("Birth Cert Match - 100%")
-                            .build();
-                    response = responseBuilder.searchSource(SearchSource.IPCS).match(match).build();
-                    simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/results", objectMapper.writeValueAsString(response), createHeaders(sessionId));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
+    }
+
+    private void sendResponse(ICBResponse response, String sessionId, String topic) throws JsonProcessingException {
+        simpMessagingTemplate.convertAndSendToUser(sessionId, topic, objectMapper.writeValueAsString(response), createHeaders(sessionId));
     }
 }

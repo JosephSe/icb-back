@@ -1,14 +1,8 @@
 package uk.go.hm.icb.service.lev;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import org.springframework.util.StringUtils;
 import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBMultiMatch;
@@ -19,15 +13,25 @@ import uk.go.hm.icb.dto.SearchBioDetails;
 import uk.go.hm.icb.dto.SearchIDType;
 import uk.go.hm.icb.dto.SearchIdentifiers;
 import uk.go.hm.icb.dto.SearchSource;
+import uk.go.hm.icb.service.SearchStrategy;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class LEVService {
+public class LEVService implements SearchStrategy {
 
     private final LevDataLoader dataLoaderService;
 
+    private final long delay;
+
     @Autowired
-    public LEVService(LevDataLoader dataLoaderService) {
+    public LEVService(LevDataLoader dataLoaderService, @Value("${app.lev.delay}") long delay) {
         this.dataLoaderService = dataLoaderService;
+        this.delay = delay;
     }
 
     public List<LEVRecord> searchByLastName(String lastName) {
@@ -38,11 +42,12 @@ public class LEVService {
 
     /**
      * filter on LEV records last names
-     * */
+     */
+    @Override
     public ICBResponse search(ICBRequest request) {
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.LEV);
         Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
-                .stream().filter(t -> SearchIDType.BIRTH_CERTIFICATE == t.getIdType()).filter(t-> StringUtils.hasText(t.getIdValue()))
+                .stream().filter(t -> SearchIDType.BIRTH_CERTIFICATE == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
                 .findFirst();
         List<LEVRecord> levRecords = dataLoaderService.getRecords();
         List<LEVRecord> list;
@@ -94,15 +99,19 @@ public class LEVService {
         } else {
             responseBuilder.matchStatus("Multiple matches found")
                     .multiMatches(
-                    list.stream().map(rec -> ICBMultiMatch.builder()
-                            .firstName(rec.getFirstName())
-                            .lastName(rec.getLastName())
-                            .middleName(rec.getMiddleName())
-                            .dateOfBirth(rec.getDateOfBirth())
-                            .address(rec.getAddress())
-                            .build()).toList());
+                            list.stream().map(rec -> ICBMultiMatch.builder()
+                                    .firstName(rec.getFirstName())
+                                    .lastName(rec.getLastName())
+                                    .middleName(rec.getMiddleName())
+                                    .dateOfBirth(rec.getDateOfBirth())
+                                    .address(rec.getAddress())
+                                    .build()).toList());
         }
         return responseBuilder.searchComplete(true).build();
     }
 
+    @Override
+    public long getDelay() {
+        return this.delay;
+    }
 }
