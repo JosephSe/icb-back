@@ -23,10 +23,10 @@ import uk.go.hm.icb.dto.SearchSource;
 @Service
 public class LEVService {
 
-    private final LevDataLoaderService dataLoaderService;
+    private final LevDataLoader dataLoaderService;
 
     @Autowired
-    public LEVService(LevDataLoaderService dataLoaderService) {
+    public LEVService(LevDataLoader dataLoaderService) {
         this.dataLoaderService = dataLoaderService;
     }
 
