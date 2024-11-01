@@ -1,12 +1,8 @@
 package uk.go.hm.icb.service.dvla;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.ICBMatch;
 import uk.go.hm.icb.dto.ICBMultiMatch;
@@ -15,23 +11,32 @@ import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchIDType;
 import uk.go.hm.icb.dto.SearchIdentifiers;
 import uk.go.hm.icb.dto.SearchSource;
+import uk.go.hm.icb.service.SearchStrategy;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class DVLAService {
+public class DVLAService implements SearchStrategy {
     
     private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
 
     private final DrivingLicenceDataLoader recordLoader;
 
+    private long delay;
+
     @Autowired
-    public DVLAService(DrivingLicenceDataLoader recordLoader) {
+    public DVLAService(DrivingLicenceDataLoader recordLoader, @Value("${app.dvla.delay}") long delay) {
         this.recordLoader = recordLoader;
+        this.delay = delay;
     }
 
     /**
      * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
      * filtering on other fields should also be added if they are in the input request
      * */
+    @Override
     public ICBResponse search(ICBRequest request) {
         ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
@@ -60,6 +65,11 @@ public class DVLAService {
             responseBuilder.match(matchBuilder.build());
         }
         return responseBuilder.searchComplete(true).build();
+    }
+
+    @Override
+    public long getDelay() {
+        return delay;
     }
 
     public List<DrivingLicenceRecord> searchByLastName(String lastName) {
