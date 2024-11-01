@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 class SearchControllerTest {
 
     @Mock
-    private DVLAService dvlaService;
+    private DVLAService mockDvlaService;
 
     @InjectMocks
     private SearchController searchController;
@@ -41,7 +41,7 @@ class SearchControllerTest {
         searchRequest.setCriteria(criteria);
 
         DrivingLicenceRecord driverInfo = new DrivingLicenceRecord("John","A.","Doe","14-05-1990","123 Baker Street, London, NW1 6XE","D12345678");
-        when(dvlaService.searchByLastName("Smith")).thenReturn(List.of(driverInfo));
+        when(mockDvlaService.searchByLastName("Smith")).thenReturn(List.of(driverInfo));
 
         // Act
         ResponseEntity<SearchResponse<?>> response = searchController.search(searchRequest);
@@ -54,7 +54,7 @@ class SearchControllerTest {
         assertEquals(driverInfo, results.get(0));
 
         // Verify that the service method was called
-        verify(dvlaService, times(1)).searchByLastName("Smith");
+        verify(mockDvlaService, times(1)).searchByLastName("Smith");
     }
 
     @Test
@@ -65,7 +65,7 @@ class SearchControllerTest {
         criteria.setLastName("NonExistent");
         searchRequest.setCriteria(criteria);
 
-        when(dvlaService.searchByLastName("NonExistent")).thenReturn(null);
+        when(mockDvlaService.searchByLastName("NonExistent")).thenReturn(null);
 
         // Act
         ResponseEntity<SearchResponse<?>> response = searchController.search(searchRequest);
@@ -77,7 +77,7 @@ class SearchControllerTest {
         assertNull(response.getBody().getResults());
 
         // Verify that the service method was called
-        verify(dvlaService, times(1)).searchByLastName("NonExistent");
+        verify(mockDvlaService, times(1)).searchByLastName("NonExistent");
     }
 
     @Test

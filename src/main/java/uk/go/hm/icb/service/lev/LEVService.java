@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class LEVService implements SearchStrategy {
 
-    private final LevDataLoaderService dataLoaderService;
+    private final LevDataLoader dataLoaderService;
 
     private final long delay;
 
     @Autowired
-    public LEVService(LevDataLoaderService dataLoaderService, @Value("${app.lev.delay}") long delay) {
+    public LEVService(LevDataLoader dataLoaderService, @Value("${app.lev.delay}") long delay) {
         this.dataLoaderService = dataLoaderService;
         this.delay = delay;
     }
@@ -114,8 +114,4 @@ public class LEVService implements SearchStrategy {
     public long getDelay() {
         return this.delay;
     }
-
 }
-
-
-
