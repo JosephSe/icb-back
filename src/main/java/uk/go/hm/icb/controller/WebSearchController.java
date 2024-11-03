@@ -29,15 +29,16 @@ public class WebSearchController {
     private final DVLAService dvlaService;
     private final LEVService levService;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     final String resultsTopic = "/topic/results";
     private Map<SearchSource, SearchStrategy> searchStrategies;
 
     @Autowired
-    public WebSearchController(DVLAService dvlaService, LEVService levService, SimpMessagingTemplate simpMessagingTemplate) {
+    public WebSearchController(DVLAService dvlaService, LEVService levService, SimpMessagingTemplate simpMessagingTemplate, ObjectMapper objectMapper) {
         this.dvlaService = dvlaService;
         this.levService = levService;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.objectMapper = objectMapper;
         searchStrategies = Map.of(
                 SearchSource.DVLA, dvlaService,
                 SearchSource.LEV, levService,

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,6 +15,6 @@ public class ICBGenericRecord {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String dateOfBirth;
+    private LocalDate dateOfBirth;
     private String address;
 }

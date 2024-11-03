@@ -13,6 +13,7 @@ import uk.go.hm.icb.dto.SearchRequest;
 import uk.go.hm.icb.dto.SearchResponse;
 import uk.go.hm.icb.service.dvla.DVLAService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +41,7 @@ class SearchControllerTest {
         criteria.setLastName("Smith");
         searchRequest.setCriteria(criteria);
 
-        DrivingLicenceRecord driverInfo = new DrivingLicenceRecord("John","A.","Doe","14-05-1990","123 Baker Street, London, NW1 6XE","D12345678");
+        DrivingLicenceRecord driverInfo = new DrivingLicenceRecord("John","A.","Doe", LocalDate.of(1990, 5, 14),"123 Baker Street, London, NW1 6XE","D12345678");
         when(mockDvlaService.searchByLastName("Smith")).thenReturn(List.of(driverInfo));
 
         // Act

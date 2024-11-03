@@ -4,12 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
+
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class LEVRecord extends ICBGenericRecord implements SearchDataType {
     private String birthCertificate;
 
-    public LEVRecord(String firstName, String middleName, String lastName, String dateOfBirth, String address, String birthCertificate) {
+    public LEVRecord(String firstName, String middleName, String lastName, LocalDate dateOfBirth, String address, String birthCertificate) {
         super(firstName, middleName, lastName, dateOfBirth, address);
         this.birthCertificate = birthCertificate;
     }
