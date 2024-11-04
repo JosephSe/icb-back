@@ -12,6 +12,8 @@ import uk.go.hm.icb.dto.LEVRecord;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,7 @@ public class LevDataLoader {
     }
 
     private void loadRecords() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         try {
             Resource resource = resourceLoader.getResource(CSV_FILE_PATH);
             try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
@@ -43,7 +46,7 @@ public class LevDataLoader {
                 br.readLine(); // Skip header
                 while ((line = br.readLine()) != null) {
                     String[] values = line.split(",");
-                    records.add(new LEVRecord(values[0], values[1], values[2], values[3], values[4], values[5]));
+                    records.add(new LEVRecord(values[0], values[1], values[2], LocalDate.parse(values[3], formatter), values[4], values[5]));
                 }
             }
         } catch (IOException e) {

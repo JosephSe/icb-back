@@ -50,19 +50,20 @@ public class LEVService implements SearchStrategy {
                 .stream().filter(t -> SearchIDType.BIRTH_CERTIFICATE == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
                 .findFirst();
         List<LEVRecord> levRecords = dataLoaderService.getRecords();
-        List<LEVRecord> list;
+        List<LEVRecord> list = List.of();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         if (searchDLIdentifiers.isPresent()) {
             list = levRecords.stream()
                     .filter(rec -> searchDLIdentifiers.map(si -> si.getIdValue().equalsIgnoreCase(rec.getBirthCertificate())).orElse(false))
                     .toList();
-        } else {
+        }
+        if (list.isEmpty()){
             list = levRecords.stream()
                     .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName())
                             .map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
                     .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getFirstName())
                             .map(f -> f.equalsIgnoreCase(rec.getFirstName())).orElse(false))
-                    .filter(rec -> LocalDate.parse(rec.getDateOfBirth(), formatter).isEqual(Optional.of(request.getSearchBioDetails()).map(SearchBioDetails::getDateOfBirth).orElse(LocalDate.now())))
+                    .filter(rec -> rec.getDateOfBirth().isEqual(Optional.of(request.getSearchBioDetails()).map(SearchBioDetails::getDateOfBirth).orElse(LocalDate.now())))
                     .toList();
         }
 
@@ -71,12 +72,10 @@ public class LEVService implements SearchStrategy {
         } else if (list.size() == 1) {
             ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
             LEVRecord record = list.get(0);
-            String levMatched = Optional.ofNullable(record.getBirthCertificate())
-                    .map(dl -> dl.equalsIgnoreCase(searchDLIdentifiers
-                            .map(SearchIdentifiers::getIdValue)
-                            .orElse("")))
-                    .map(b -> b ? "YES" : "NO")
-                    .orElse("-");
+
+            String levMatched = searchDLIdentifiers.map(SearchIdentifiers::getIdValue)
+                    .map(dl -> dl.equalsIgnoreCase(record.getBirthCertificate()))
+                    .map(b -> b ? "YES" : "NO").orElse("-");
             String firstNameMatched = Optional.ofNullable(record.getFirstName())
                     .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getFirstName()))
                     .map(b -> b ? "YES" : "NO")
@@ -85,12 +84,12 @@ public class LEVService implements SearchStrategy {
                     .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getLastName()))
                     .map(b -> b ? "YES" : "NO")
                     .orElse("-");
-            String middleNameMatched = Optional.ofNullable(record.getMiddleName())
-                    .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getMiddleName()))
-                    .map(b -> b ? "YES" : "NO")
-                    .orElse("-");
+            String middleNameMatched = Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getMiddleName)
+                    .filter(StringUtils::hasText)
+                    .map(mn -> mn.equalsIgnoreCase(record.getMiddleName()))
+                            .map(b -> b ? "YES" : "NO").orElse("-");
             String dobMatched = Optional.ofNullable(record.getDateOfBirth())
-                    .map(mn -> LocalDate.parse(mn, formatter).isEqual(Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getDateOfBirth).orElse(LocalDate.now())))
+                    .map(mn -> mn.isEqual(Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getDateOfBirth).orElse(LocalDate.now())))
                     .map(b -> b ? "YES" : "NO")
                     .orElse("-");
 
@@ -105,6 +104,7 @@ public class LEVService implements SearchStrategy {
                                     .middleName(rec.getMiddleName())
                                     .dateOfBirth(rec.getDateOfBirth())
                                     .address(rec.getAddress())
+                                    .birthCertificate(rec.getBirthCertificate())
                                     .build()).toList());
         }
         return responseBuilder.searchComplete(true).build();
