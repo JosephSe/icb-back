@@ -16,6 +16,7 @@ import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchSource;
 import uk.go.hm.icb.service.SearchStrategy;
 import uk.go.hm.icb.service.dvla.DVLAService;
+import uk.go.hm.icb.service.ipcs.IPCSService;
 import uk.go.hm.icb.service.lev.LEVService;
 
 import java.util.Map;
@@ -28,21 +29,23 @@ public class WebSearchController {
 
     private final DVLAService dvlaService;
     private final LEVService levService;
+    private final IPCSService ipcsService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ObjectMapper objectMapper;
     final String resultsTopic = "/topic/results";
     private Map<SearchSource, SearchStrategy> searchStrategies;
 
     @Autowired
-    public WebSearchController(DVLAService dvlaService, LEVService levService, SimpMessagingTemplate simpMessagingTemplate, ObjectMapper objectMapper) {
+    public WebSearchController(DVLAService dvlaService, LEVService levService, IPCSService ipcsService, SimpMessagingTemplate simpMessagingTemplate, ObjectMapper objectMapper) {
         this.dvlaService = dvlaService;
         this.levService = levService;
+        this.ipcsService = ipcsService;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.objectMapper = objectMapper;
         searchStrategies = Map.of(
                 SearchSource.DVLA, dvlaService,
                 SearchSource.LEV, levService,
-                SearchSource.IPCS, dvlaService
+                SearchSource.IPCS, ipcsService
         );
     }
 
@@ -73,7 +76,7 @@ public class WebSearchController {
             try {
                 Thread.sleep(strategy.getDelay());
                 ICBResponse response = strategy.search(request);
-                sendResponse(response, sessionId, resultsTopic);
+                sendResponse(response, sessionId);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (JsonProcessingException e) {
@@ -82,7 +85,7 @@ public class WebSearchController {
         });
     }
 
-    private void sendResponse(ICBResponse response, String sessionId, String topic) throws JsonProcessingException {
-        simpMessagingTemplate.convertAndSendToUser(sessionId, topic, objectMapper.writeValueAsString(response), createHeaders(sessionId));
+    private void sendResponse(ICBResponse response, String sessionId) throws JsonProcessingException {
+        simpMessagingTemplate.convertAndSendToUser(sessionId, resultsTopic, objectMapper.writeValueAsString(response), createHeaders(sessionId));
     }
 }
