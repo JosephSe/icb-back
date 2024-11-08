@@ -28,3 +28,5 @@ app:
     delay: 2000
   lev:
     delay: 5000
+  ipcs:
+    delay: 1000
