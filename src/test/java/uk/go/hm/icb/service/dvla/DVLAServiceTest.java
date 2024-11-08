@@ -60,19 +60,21 @@ class DVLAServiceTest {
         assertNotNull(response.getMatch());
 
         //First Name
-        assertEquals("No", response.getMatch().getMatches().get(0).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(0).getSecond());
         //Last Name
-        assertEquals("NO", response.getMatch().getMatches().get(1).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(1).getSecond());
         //Middle Name
         assertEquals("-", response.getMatch().getMatches().get(2).getSecond());
         //DOB
-        assertEquals("No", response.getMatch().getMatches().get(3).getSecond());
+        assertEquals("NO", response.getMatch().getMatches().get(3).getSecond());
         //Address
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //LEV matched
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //DL matched
         assertEquals("YES", response.getMatch().getMatches().get(6).getSecond());
+        //IPCS matched
+        assertEquals("-", response.getMatch().getMatches().get(7).getSecond());
     }
 
     @Test
@@ -95,19 +97,21 @@ class DVLAServiceTest {
         assertNotNull(response.getMatch());
 
         //First Name
-        assertEquals("No", response.getMatch().getMatches().get(0).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(0).getSecond());
         //Last Name
         assertEquals("YES", response.getMatch().getMatches().get(1).getSecond());
         //Middle Name
         assertEquals("-", response.getMatch().getMatches().get(2).getSecond());
         //DOB
-        assertEquals("No", response.getMatch().getMatches().get(3).getSecond());
+        assertEquals("NO", response.getMatch().getMatches().get(3).getSecond());
         //Address
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //LEV matched
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //DL matched
-        assertEquals("NO", response.getMatch().getMatches().get(6).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(6).getSecond());
+        //IPCS matched
+        assertEquals("-", response.getMatch().getMatches().get(7).getSecond());
     }
 
     @Test
@@ -164,7 +168,7 @@ class DVLAServiceTest {
 
         ICBRequest request = ICBRequest.builder()
                 .searchBioDetails(SearchBioDetails.builder()
-                        .lastName("Doe")
+                        .lastName("Tom")
                         .build())
                 .searchIDTypes(List.of(driverLicense))
                 .build();
