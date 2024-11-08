@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class LevDataLoader {
+public class LEVDataLoader {
 
     private static final String CSV_FILE_PATH = "classpath:lev_records.csv";
 
@@ -28,7 +28,7 @@ public class LevDataLoader {
     private final ResourceLoader resourceLoader;
 
     @Autowired
-    public LevDataLoader(ResourceLoader resourceLoader) {
+    public LEVDataLoader(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
