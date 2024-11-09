@@ -43,7 +43,7 @@ public class IPCSService implements SearchStrategy {
     @Override
     public ICBResponse search(ICBRequest request) {
         ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.IPCS);
-        Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
+        Optional<SearchIdentifiers> searchIPCSIdentifier = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
                 .stream().filter(t -> SearchIDType.IPCS_PPT_NUM == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
                 .findFirst();
 
@@ -51,16 +51,15 @@ public class IPCSService implements SearchStrategy {
 
         String firstName = request.getSearchBioDetails().getFirstName();
         String lastName = request.getSearchBioDetails().getLastName();
-        String passportNumber = searchDLIdentifiers.get().getIdValue();
 
         Predicate<IPCSRecord> firstNamePredicate = record ->
-                request.getSearchBioDetails().getFirstName() == null || firstName.equals(record.getFirstName());
+                StringUtils.hasText(firstName) && firstName.equalsIgnoreCase(record.getFirstName());
 
         Predicate<IPCSRecord> lastNamePredicate = record ->
-                lastName == null || lastName.equals(record.getLastName());
+               StringUtils.hasText(lastName) && lastName.equalsIgnoreCase(record.getLastName());
 
-        Predicate<IPCSRecord> passportPredicate = record ->
-                passportNumber == null || passportNumber.equals(record.getPassportNumber());
+        Predicate<IPCSRecord> passportPredicate = record -> searchIPCSIdentifier.isPresent() &&
+                searchIPCSIdentifier.get().getIdValue().equalsIgnoreCase(record.getPassportNumber());
 
         List<IPCSRecord> list = ipcsRecords.stream()
                 .filter(firstNamePredicate)
@@ -72,11 +71,18 @@ public class IPCSService implements SearchStrategy {
             responseBuilder.matchStatus("No match found");
         } else if (list.size() == 1) {
             ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
-            IPCSRecord record = list.getFirst();
-            String ipcsMatched = "YES";
-            String firstNameMatched = "YES";
-            String lastNameMatched = "YES";
-
+            IPCSRecord record = list.get(0);
+            String firstNameMatched = Optional.ofNullable(record.getFirstName())
+                    .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getFirstName()))
+                    .map(b -> b ? "YES" : "NO")
+                    .orElse("-");
+            String lastNameMatched = Optional.ofNullable(record.getLastName())
+                    .map(mn -> mn.equalsIgnoreCase(request.getSearchBioDetails().getLastName()))
+                    .map(b -> b ? "YES" : "NO")
+                    .orElse("-");
+            String ipcsMatched = searchIPCSIdentifier.map(SearchIdentifiers::getIdValue)
+                    .map(dl -> dl.equalsIgnoreCase(record.getPassportNumber()))
+                    .map(b -> b ? "YES" : "NO").orElse("-");
             matchBuilder.matches(firstNameMatched, lastNameMatched, "-", "-", "-", "-", "-",ipcsMatched);
             responseBuilder.matchStatus("One match found").match(matchBuilder.build());
         } else {
