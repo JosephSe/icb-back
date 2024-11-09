@@ -18,17 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class LevDataLoader {
+public class LEVDataLoader {
 
     private static final String CSV_FILE_PATH = "classpath:lev_records.csv";
-
     @Getter
     private final List<LEVRecord> records = new ArrayList<>();
 
     private final ResourceLoader resourceLoader;
 
     @Autowired
-    public LevDataLoader(ResourceLoader resourceLoader) {
+    public LEVDataLoader(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
@@ -50,7 +49,7 @@ public class LevDataLoader {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error loading driving licence records", e);
+            throw new RuntimeException("Error loading driving licence records ", e);
         }
     }
 

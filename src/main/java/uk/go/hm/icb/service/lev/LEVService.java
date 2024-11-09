@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class LEVService implements SearchStrategy {
 
-    private final LevDataLoader dataLoaderService;
+    private final LEVDataLoader dataLoaderService;
 
     private final long delay;
 
     @Autowired
-    public LEVService(LevDataLoader dataLoaderService, @Value("${app.lev.delay}") long delay) {
+    public LEVService(LEVDataLoader dataLoaderService, @Value("${app.lev.delay}") long delay) {
         this.dataLoaderService = dataLoaderService;
         this.delay = delay;
     }
@@ -93,7 +93,7 @@ public class LEVService implements SearchStrategy {
                     .map(b -> b ? "YES" : "NO")
                     .orElse("-");
 
-            matchBuilder.matches(firstNameMatched, lastNameMatched, middleNameMatched, dobMatched, "-", levMatched, "-");
+            matchBuilder.matches(firstNameMatched, lastNameMatched, middleNameMatched, dobMatched, "-", levMatched, "-", "-");
             responseBuilder.matchStatus("One match found").match(matchBuilder.build());
         } else {
             responseBuilder.matchStatus("Multiple matches found")

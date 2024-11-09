@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @Service
 public class DVLAService implements SearchStrategy {
     
-    private static final String CSV_FILE_PATH = "classpath:driving_licence_records.csv";
-
     private final DVLADataLoader recordLoader;
 
     private final long delay;
@@ -87,7 +85,7 @@ public class DVLAService implements SearchStrategy {
                     .map(b -> b ? "YES" : "NO")
                     .orElse("-");
 
-            matchBuilder.matches(firstNameMatched, lastNameMatched, middleNameMatched, dobMatched, "-", "-", dvlaMatched);
+            matchBuilder.matches(firstNameMatched, lastNameMatched, middleNameMatched, dobMatched, "-", "-", dvlaMatched, "-");
             responseBuilder.matchStatus("One match found").match(matchBuilder.build());
         } else {
             responseBuilder.matchStatus("Multiple matches found")

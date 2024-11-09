@@ -7,12 +7,21 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
-public class LEVRecord extends ICBGenericRecord implements SearchDataType {
+@EqualsAndHashCode
+public class LEVRecord implements SearchDataType {
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private LocalDate dateOfBirth;
+    private String address;
     private String birthCertificate;
 
     public LEVRecord(String firstName, String middleName, String lastName, LocalDate dateOfBirth, String address, String birthCertificate) {
-        super(firstName, middleName, lastName, dateOfBirth, address);
+        this.firstName = firstName;
+        this.middleName = middleName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
         this.birthCertificate = birthCertificate;
     }
 }
