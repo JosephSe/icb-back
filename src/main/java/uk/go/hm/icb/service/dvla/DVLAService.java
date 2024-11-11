@@ -4,15 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import uk.go.hm.icb.dto.DrivingLicenceRecord;
-import uk.go.hm.icb.dto.ICBMatch;
-import uk.go.hm.icb.dto.ICBMultiMatch;
-import uk.go.hm.icb.dto.ICBRequest;
-import uk.go.hm.icb.dto.ICBResponse;
-import uk.go.hm.icb.dto.SearchBioDetails;
-import uk.go.hm.icb.dto.SearchIDType;
-import uk.go.hm.icb.dto.SearchIdentifiers;
-import uk.go.hm.icb.dto.SearchSource;
+import uk.go.hm.icb.dto.*;
 import uk.go.hm.icb.service.SearchStrategy;
 
 import java.time.LocalDate;
@@ -22,9 +14,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class DVLAService implements SearchStrategy {
-    
-    private final DVLADataLoader recordLoader;
 
+    private final DVLADataLoader recordLoader;
     private final long delay;
 
     @Autowired
@@ -33,73 +24,135 @@ public class DVLAService implements SearchStrategy {
         this.delay = delay;
     }
 
-    /**
-     * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
-     * filtering on other fields should also be added if they are in the input request
-     * */
     @Override
     public ICBResponse search(ICBRequest request) {
-        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.DVLA);
-        Optional<SearchIdentifiers> searchDLIdentifiers = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
-                .stream().filter(t -> SearchIDType.DRIVER_LICENSE == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
+        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder()
+                .searchSource(SearchSource.DVLA);
+
+        List<DrivingLicenceRecord> matchedRecords = findMatchingRecords(request);
+
+        return buildResponse(responseBuilder, matchedRecords, request);
+    }
+
+    private List<DrivingLicenceRecord> findMatchingRecords(ICBRequest request) {
+        Optional<SearchIdentifiers> driverLicenseIdentifier = findDriverLicenseIdentifier(request);
+        List<DrivingLicenceRecord> records = recordLoader.getRecords();
+
+        if (driverLicenseIdentifier.isPresent()) {
+            List<DrivingLicenceRecord> licenseMatches = filterByLicenseNumber(records, driverLicenseIdentifier.get());
+            if (!licenseMatches.isEmpty()) {
+                return licenseMatches;
+            }
+        }
+
+        return filterByLastName(records, request.getSearchBioDetails());
+    }
+
+    private Optional<SearchIdentifiers> findDriverLicenseIdentifier(ICBRequest request) {
+        return Optional.ofNullable(request.getSearchIDTypes())
+                .orElse(List.of())
+                .stream()
+                .filter(t -> SearchIDType.DRIVER_LICENSE == t.getIdType())
+                .filter(t -> StringUtils.hasText(t.getIdValue()))
                 .findFirst();
-        List<DrivingLicenceRecord> dvlaRecords = recordLoader.getRecords();
-        List<DrivingLicenceRecord> list = List.of();
-        if (searchDLIdentifiers.isPresent()) {
-            list = dvlaRecords.stream()
-                    .filter(rec -> searchDLIdentifiers
-                            .map(si -> si.getIdValue().equalsIgnoreCase(rec.getDrivingLicenseNumber()))
-                            .orElse(false))
-                    .toList();
-        }
-        if (list.isEmpty()){
-            list = dvlaRecords.stream()
-                    .filter(rec -> Optional.ofNullable(request.getSearchBioDetails().getLastName())
-                            .map(f -> f.equalsIgnoreCase(rec.getLastName())).orElse(false))
-                    .toList();
-        }
+    }
 
-        if (list.isEmpty()) {
-            responseBuilder.matchStatus("No match found");
-        } else if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
-            DrivingLicenceRecord record = list.get(0);
+    private List<DrivingLicenceRecord> filterByLicenseNumber(List<DrivingLicenceRecord> records,
+                                                             SearchIdentifiers identifier) {
+        return records.stream()
+                .filter(rec -> identifier.getIdValue().equalsIgnoreCase(rec.getDrivingLicenseNumber()))
+                .toList();
+    }
 
-            String dvlaMatched = searchDLIdentifiers.map(SearchIdentifiers::getIdValue)
-                    .map(dl -> dl.equalsIgnoreCase(record.getDrivingLicenseNumber()))
-                    .map(b -> b ? "YES" : "NO").orElse("-");
-            String firstNameMatched = Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getFirstName)
-                    .filter(StringUtils::hasText)
-                    .map(mn -> mn.equalsIgnoreCase(record.getFirstName()))
-                    .map(b -> b ? "YES" : "NO").orElse("-");
-            String lastNameMatched = Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getLastName)
-                    .filter(StringUtils::hasText)
-                    .map(mn -> mn.equalsIgnoreCase(record.getLastName()))
-                    .map(b -> b ? "YES" : "NO").orElse("-");
-            String middleNameMatched = Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getMiddleName)
-                    .filter(StringUtils::hasText)
-                    .map(mn -> mn.equalsIgnoreCase(record.getMiddleName()))
-                    .map(b -> b ? "YES" : "NO").orElse("-");
-            String dobMatched = Optional.ofNullable(record.getDateOfBirth())
-                    .map(mn -> mn.isEqual(Optional.ofNullable(request.getSearchBioDetails()).map(SearchBioDetails::getDateOfBirth).orElse(LocalDate.now())))
-                    .map(b -> b ? "YES" : "NO")
-                    .orElse("-");
+    private List<DrivingLicenceRecord> filterByLastName(List<DrivingLicenceRecord> records,
+                                                        SearchBioDetails bioDetails) {
+        return records.stream()
+                .filter(rec -> Optional.ofNullable(bioDetails.getLastName())
+                        .map(lastName -> lastName.equalsIgnoreCase(rec.getLastName()))
+                        .orElse(false))
+                .toList();
+    }
 
-            matchBuilder.matches(firstNameMatched, lastNameMatched, middleNameMatched, dobMatched, "-", "-", dvlaMatched, "-");
-            responseBuilder.matchStatus("One match found").match(matchBuilder.build());
+    private ICBResponse buildResponse(ICBResponse.ICBResponseBuilder responseBuilder,
+                                      List<DrivingLicenceRecord> matches,
+                                      ICBRequest request) {
+        if (matches.isEmpty()) {
+            return responseBuilder.matchStatus("No match found")
+                    .searchComplete(true)
+                    .build();
+        } else if (matches.size() == 1) {
+            return buildSingleMatchResponse(responseBuilder, matches.getFirst(), request);
         } else {
-            responseBuilder.matchStatus("Multiple matches found")
-                    .multiMatches(
-                            list.stream().map(rec -> ICBMultiMatch.builder()
-                                    .firstName(rec.getFirstName())
-                                    .lastName(rec.getLastName())
-                                    .middleName(rec.getMiddleName())
-                                    .dateOfBirth(rec.getDateOfBirth())
-                                    .address(rec.getAddress())
-                                    .drivingLicenseNumber(rec.getDrivingLicenseNumber())
-                                    .build()).toList());
+            return buildMultipleMatchResponse(responseBuilder, matches);
         }
-        return responseBuilder.searchComplete(true).build();
+    }
+
+    private ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
+                                                 DrivingLicenceRecord record,
+                                                 ICBRequest request) {
+        ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
+        SearchBioDetails bioDetails = request.getSearchBioDetails();
+
+        // Create individual match results for each field
+        String firstNameMatch = matchField(bioDetails.getFirstName(), record.getFirstName());
+        String lastNameMatch = matchField(bioDetails.getLastName(), record.getLastName());
+        String middleNameMatch = matchField(bioDetails.getMiddleName(), record.getMiddleName());
+        String dobMatch = matchDateField(bioDetails.getDateOfBirth(), record.getDateOfBirth());
+        String addressMatch = "-";
+        String postcodeMatch = "-";
+        String driverLicenseMatch = matchDriverLicense(request, record);
+        String additionalInfoMatch = "-";
+
+        return responseBuilder.matchStatus("One match found")
+                .match(matchBuilder.matches(firstNameMatch, lastNameMatch, middleNameMatch, dobMatch, addressMatch, postcodeMatch, driverLicenseMatch, additionalInfoMatch)
+                        .build())
+                .searchComplete(true)
+                .build();
+    }
+
+    private ICBResponse buildMultipleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
+                                                   List<DrivingLicenceRecord> matches) {
+        List<ICBMultiMatch> multiMatches = matches.stream()
+                .map(this::createMultiMatch)
+                .toList();
+
+        return responseBuilder.matchStatus("Multiple matches found")
+                .multiMatches(multiMatches)
+                .searchComplete(true)
+                .build();
+    }
+
+    private ICBMultiMatch createMultiMatch(DrivingLicenceRecord record) {
+        return ICBMultiMatch.builder()
+                .firstName(record.getFirstName())
+                .lastName(record.getLastName())
+                .middleName(record.getMiddleName())
+                .dateOfBirth(record.getDateOfBirth())
+                .address(record.getAddress())
+                .drivingLicenseNumber(record.getDrivingLicenseNumber())
+                .build();
+    }
+
+    private String matchField(String requestValue, String recordValue) {
+        return Optional.ofNullable(requestValue)
+                .filter(StringUtils::hasText)
+                .map(value -> value.equalsIgnoreCase(recordValue) ? "YES" : "NO")
+                .orElse("-");
+    }
+
+    private String matchDateField(LocalDate requestDate, LocalDate recordDate) {
+        return Optional.ofNullable(recordDate)
+                .map(date -> date.isEqual(Optional.ofNullable(requestDate).orElse(LocalDate.now())))
+                .map(matches -> matches ? "YES" : "NO")
+                .orElse("-");
+    }
+
+    private String matchDriverLicense(ICBRequest request, DrivingLicenceRecord record) {
+        return findDriverLicenseIdentifier(request)
+                .map(SearchIdentifiers::getIdValue)
+                .map(dl -> dl.equalsIgnoreCase(record.getDrivingLicenseNumber()))
+                .map(matches -> matches ? "YES" : "NO")
+                .orElse("-");
     }
 
     @Override
@@ -112,5 +165,4 @@ public class DVLAService implements SearchStrategy {
                 .filter(record -> record.getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
     }
-
 }
