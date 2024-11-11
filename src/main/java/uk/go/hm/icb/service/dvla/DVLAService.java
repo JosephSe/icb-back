@@ -84,7 +84,7 @@ public class DVLAService implements SearchStrategy {
         }
 
         if (matches.size() == 1) {
-            return buildSingleMatchResponse(responseBuilder, matches.get(0), request);
+            return buildSingleMatchResponse(responseBuilder, matches.getFirst(), request);
         }
 
         return buildMultipleMatchResponse(responseBuilder, matches);
