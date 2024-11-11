@@ -77,17 +77,14 @@ public class DVLAService implements SearchStrategy {
                                       List<DrivingLicenceRecord> matches,
                                       ICBRequest request) {
         if (matches.isEmpty()) {
-            return responseBuilder
-                    .matchStatus("No match found")
+            return responseBuilder.matchStatus("No match found")
                     .searchComplete(true)
                     .build();
-        }
-
-        if (matches.size() == 1) {
+        } else if (matches.size() == 1) {
             return buildSingleMatchResponse(responseBuilder, matches.getFirst(), request);
+        } else {
+            return buildMultipleMatchResponse(responseBuilder, matches);
         }
-
-        return buildMultipleMatchResponse(responseBuilder, matches);
     }
 
     private ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
@@ -106,8 +103,7 @@ public class DVLAService implements SearchStrategy {
         String driverLicenseMatch = matchDriverLicense(request, record);
         String additionalInfoMatch = "-";
 
-        return responseBuilder
-                .matchStatus("One match found")
+        return responseBuilder.matchStatus("One match found")
                 .match(matchBuilder.matches(firstNameMatch, lastNameMatch, middleNameMatch, dobMatch, addressMatch, postcodeMatch, driverLicenseMatch, additionalInfoMatch)
                         .build())
                 .searchComplete(true)
@@ -120,8 +116,7 @@ public class DVLAService implements SearchStrategy {
                 .map(this::createMultiMatch)
                 .toList();
 
-        return responseBuilder
-                .matchStatus("Multiple matches found")
+        return responseBuilder.matchStatus("Multiple matches found")
                 .multiMatches(multiMatches)
                 .searchComplete(true)
                 .build();
