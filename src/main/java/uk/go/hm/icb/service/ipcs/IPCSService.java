@@ -3,95 +3,113 @@ package uk.go.hm.icb.service.ipcs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import uk.go.hm.icb.dto.DrivingLicenceRecord;
-import uk.go.hm.icb.dto.ICBMatch;
-import uk.go.hm.icb.dto.ICBMultiMatch;
-import uk.go.hm.icb.dto.ICBRequest;
-import uk.go.hm.icb.dto.ICBResponse;
-import uk.go.hm.icb.dto.IPCSRecord;
-import uk.go.hm.icb.dto.SearchBioDetails;
-import uk.go.hm.icb.dto.SearchIDType;
-import uk.go.hm.icb.dto.SearchIdentifiers;
-import uk.go.hm.icb.dto.SearchSource;
-import uk.go.hm.icb.service.SearchStrategy;
-import uk.go.hm.icb.service.dvla.DVLADataLoader;
+import uk.go.hm.icb.dto.*;
+import uk.go.hm.icb.service.AbstractSearchService;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
-public class IPCSService implements SearchStrategy {
+public class IPCSService extends AbstractSearchService {
 
     private final IPCSDataLoader recordLoader;
 
-    private final long delay;
-
     @Autowired
     public IPCSService(IPCSDataLoader recordLoader, @Value("${app.ipcs.delay}") long delay) {
+        super(delay);
         this.recordLoader = recordLoader;
-        this.delay = delay;
     }
 
-    /**
-     * filter on DVLA records first on DL Number, then on first, last and middle (if it exists) names
-     * filtering on other fields should also be added if they are in the input request
-     * */
     @Override
     public ICBResponse search(ICBRequest request) {
-        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder().searchSource(SearchSource.IPCS);
-        Optional<SearchIdentifiers> searchIPCSIdentifier = Optional.ofNullable(request.getSearchIDTypes()).orElse(List.of())
-                .stream().filter(t -> SearchIDType.IPCS_PPT_NUM == t.getIdType()).filter(t -> StringUtils.hasText(t.getIdValue()))
-                .findFirst();
+        ICBResponse.ICBResponseBuilder responseBuilder = ICBResponse.builder()
+                .searchSource(SearchSource.IPCS);
 
-        List<IPCSRecord> ipcsRecords = recordLoader.getRecords();
+        List<IPCSRecord> matchedRecords = findMatchingRecords(request);
 
-        String firstName = request.getSearchBioDetails().getFirstName();
-        String lastName = request.getSearchBioDetails().getLastName();
+        return buildBaseResponse(responseBuilder, matchedRecords, request, new IPCSMatchResponseBuilder());
+    }
 
-        Predicate<IPCSRecord> firstNamePredicate = record ->
-                StringUtils.hasText(firstName) && firstName.equalsIgnoreCase(record.getFirstName());
+    private List<IPCSRecord> findMatchingRecords(ICBRequest request) {
+        Optional<SearchIdentifiers> passportIdentifier = findIdentifierByType(request, SearchIDType.IPCS_PPT_NUM);
+        List<IPCSRecord> records = recordLoader.getRecords();
 
-        Predicate<IPCSRecord> lastNamePredicate = record ->
-               StringUtils.hasText(lastName) && lastName.equalsIgnoreCase(record.getLastName());
-
-        Predicate<IPCSRecord> passportPredicate = record -> searchIPCSIdentifier.isPresent() &&
-                searchIPCSIdentifier.get().getIdValue().equalsIgnoreCase(record.getPassportNumber());
-
-        List<IPCSRecord> list = ipcsRecords.stream()
-                .filter(firstNamePredicate)
-                .filter(lastNamePredicate)
-                .filter(passportPredicate)
+        return records.stream()
+                .filter(record -> matchesBioDetails(record, request.getSearchBioDetails()))
+                .filter(record -> matchesPassport(record, passportIdentifier))
                 .toList();
+    }
 
-        if (list.isEmpty()) {
-            responseBuilder.matchStatus("No match found");
-        } else if (list.size() == 1) {
-            ICBMatch.ICBMatchBuilder matchBuilder = ICBMatch.builder();
-            String firstNameMatched = "YES";
-            String lastNameMatched = "YES";
-            String ipcsMatched = "YES";
-            matchBuilder.matches(firstNameMatched, lastNameMatched, "-", "-", "-", "-", "-",ipcsMatched);
-            responseBuilder.matchStatus("One match found").match(matchBuilder.build());
-        } else {
-            responseBuilder.matchStatus("Multiple matches found")
-                    .multiMatches(
-                            list.stream().map(rec -> ICBMultiMatch.builder()
-                                    .firstName(rec.getFirstName())
-                                    .lastName(rec.getLastName())
-                                    .drivingLicenseNumber(rec.getPassportNumber())
-                                    .build()).toList());
+    private boolean matchesBioDetails(IPCSRecord record, SearchBioDetails bioDetails) {
+        return Optional.ofNullable(bioDetails.getFirstName())
+                .map(firstName -> firstName.equalsIgnoreCase(record.getFirstName()))
+                .orElse(false)
+                &&
+                Optional.ofNullable(bioDetails.getLastName())
+                .map(lastName -> lastName.equalsIgnoreCase(record.getLastName()))
+                .orElse(false);
+    }
+
+    private boolean matchesPassport(IPCSRecord record, Optional<SearchIdentifiers> passportIdentifier) {
+        return passportIdentifier
+                .map(identifier -> identifier.getIdValue().equalsIgnoreCase(record.getPassportNumber()))
+                .orElse(false);
+    }
+
+    private class IPCSMatchResponseBuilder implements MatchResponseBuilder {
+        @Override
+        public ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
+                                                  Object record,
+                                                  ICBRequest request) {
+            IPCSRecord ipcsRecord = (IPCSRecord) record;
+            SearchBioDetails bioDetails = request.getSearchBioDetails();
+
+            ICBMatch match = ICBMatch.builder()
+                    .matches(
+                            matchField(bioDetails.getFirstName(), ipcsRecord.getFirstName()),
+                            matchField(bioDetails.getLastName(), ipcsRecord.getLastName()),
+                            "-",
+                            "-",
+                            "-",
+                            "-",
+                            "-",
+                            matchField(
+                                findIdentifierByType(request, SearchIDType.IPCS_PPT_NUM)
+                                    .map(SearchIdentifiers::getIdValue)
+                                    .orElse(null),
+                                ipcsRecord.getPassportNumber()
+                            )
+                    )
+                    .build();
+
+            return responseBuilder
+                    .matchStatus("One match found")
+                    .match(match)
+                    .searchComplete(true)
+                    .build();
         }
 
-        return responseBuilder.searchComplete(true).build();
-    }
+        @Override
+        public ICBResponse buildMultipleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
+                                                    List<?> matches) {
+            List<IPCSRecord> ipcsMatches = (List<IPCSRecord>) matches;
+            List<ICBMultiMatch> multiMatches = ipcsMatches.stream()
+                    .map(this::createMultiMatch)
+                    .toList();
 
-    @Override
-    public long getDelay() {
-        return delay;
-    }
+            return responseBuilder
+                    .matchStatus("Multiple matches found")
+                    .multiMatches(multiMatches)
+                    .searchComplete(true)
+                    .build();
+        }
 
+        private ICBMultiMatch createMultiMatch(IPCSRecord record) {
+            return ICBMultiMatch.builder()
+                    .firstName(record.getFirstName())
+                    .lastName(record.getLastName())
+                    .passportNumber(record.getPassportNumber())
+                    .build();
+        }
+    }
 }
