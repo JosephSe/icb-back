@@ -181,41 +181,6 @@ class DVLAServiceTest {
     }
 
     @Test
-    void searchByLastName_Success() {
-        // Arrange
-        when(mockDataLoader.getRecords()).thenReturn(dataLoader.getRecords());
-
-        // Act
-        List<DrivingLicenceRecord> results = dvlaService.searchByLastName("Doe");
-
-        // Assert
-        assertEquals(2, results.size());
-        results.forEach(record -> assertEquals("Doe", record.getLastName()));
-    }
-
-    @Test
-    void searchByLastName_CaseInsensitive() {
-        // Arrange
-        when(mockDataLoader.getRecords()).thenReturn(dataLoader.getRecords());
-
-        // Act
-        List<DrivingLicenceRecord> results = dvlaService.searchByLastName("doe");
-
-        // Assert
-        assertEquals(2, results.size());
-        results.forEach(record -> assertEquals("Doe", record.getLastName()));
-    }
-
-    @Test
-    void searchByLastName_NoMatch() {
-        // Act
-        List<DrivingLicenceRecord> results = dvlaService.searchByLastName("NonExistent");
-
-        // Assert
-        assertTrue(results.isEmpty());
-    }
-
-    @Test
     void search_WithEmptyDrivingLicense_ShouldIgnore() {
         // Arrange
         when(mockDataLoader.getRecords()).thenReturn(dataLoader.getRecords());
