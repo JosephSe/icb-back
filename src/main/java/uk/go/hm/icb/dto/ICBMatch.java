@@ -14,7 +14,7 @@ public class ICBMatch {
     private List<String> verifications;
 
     public static class ICBMatchBuilder {
-        public ICBMatchBuilder matches(String firstNameMatched, String lastNameMatched, String middleNameMatched, String dateOfBirthMatched, String addressMatched, String birthCertificateMatched, String drivingLicenseNumberMatched, String passportNumber) {
+        public ICBMatchBuilder matches(String firstNameMatched, String lastNameMatched, String middleNameMatched, String dateOfBirthMatched, String addressMatched, String birthCertificateMatched, String drivingLicenseNumberMatched, String passportNumber, String flag) {
             matches = List.of(
                     Pair.of("First Name", firstNameMatched),
                     Pair.of("Last Name", lastNameMatched),
@@ -23,7 +23,8 @@ public class ICBMatch {
                     Pair.of("Address", addressMatched),
                     Pair.of("Unique Identifier - Birth Cert", birthCertificateMatched),
                     Pair.of("Driving Licence Number", drivingLicenseNumberMatched),
-                    Pair.of("Passport Number", passportNumber)
+                    Pair.of("Passport Number", passportNumber),
+                    Pair.of("Flag", flag)
             );
             return this;
         }

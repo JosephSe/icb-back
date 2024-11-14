@@ -86,7 +86,8 @@ public class DVLAService extends AbstractSearchService {
                             "-",
                             "-",
                             matchDriverLicense(request, dlRecord),
-                            "-"
+                            "-",
+                            ""
                     )
                     .build();
 
