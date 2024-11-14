@@ -64,10 +64,9 @@ compileJava {
 bootJar {
 	archiveBaseName.set('uk-go-hm')
 	archiveVersion.set(version)
-	mainClass.set('uk.go.hm.icb.IcbApplication') // Replace with your main class
+	mainClass.set('uk.go.hm.icb.IcbApplication')
 }
 
-// Disable plain jar
 jar {
 	enabled = false
 }
