@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.4'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id 'io.freefair.lombok' version '8.4'
 }
 
 group = 'uk.go.hm'
@@ -24,17 +25,30 @@ repositories {
 }
 
 dependencies {
-	compileOnly 'org.projectlombok:lombok:1.18.34'
-	annotationProcessor 'org.projectlombok:lombok:1.18.34'
+	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.session:spring-session-core'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-websocket' // Add WebSocket support
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// Other libraries
 	implementation 'com.opencsv:opencsv:5.7.1'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.34'
+	testCompileOnly 'org.projectlombok:lombok:1.18.34'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mockito:mockito-core:5.8.0'
+	testImplementation 'org.mockito:mockito-junit-jupiter:5.8.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
