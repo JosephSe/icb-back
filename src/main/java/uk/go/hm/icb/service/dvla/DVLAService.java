@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.go.hm.icb.dto.*;
 import uk.go.hm.icb.service.AbstractSearchService;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,8 +85,7 @@ public class DVLAService extends AbstractSearchService {
                             "-",
                             "-",
                             matchDriverLicense(request, dlRecord),
-                            "-",
-                            ""
+                            "-"
                     )
                     .build();
 
