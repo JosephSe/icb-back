@@ -16,4 +16,5 @@ public class ICBMultiMatch {
     private String drivingLicenseNumber;
     private String birthCertificate;
     private String passportNumber;
+    private String flag;
 }

@@ -89,7 +89,8 @@ public class LEVService extends AbstractSearchService {
                             "-",
                             birthCertMatch,
                             "-",
-                            "-"
+                            "-",
+                            levRecord.getFlag()
                     )
                     .build();
 
@@ -121,6 +122,7 @@ public class LEVService extends AbstractSearchService {
                     .dateOfBirth(record.getDateOfBirth())
                     .address(record.getAddress())
                     .birthCertificate(record.getBirthCertificate())
+                    .flag(record.getFlag())
                     .build();
         }
     }

@@ -60,3 +60,13 @@ compileJava {
 	sourceCompatibility = '21'
 	targetCompatibility = '21'
 }
+
+bootJar {
+	archiveBaseName.set('uk-go-hm')
+	archiveVersion.set(version)
+	mainClass.set('uk.go.hm.icb.IcbApplication')
+}
+
+jar {
+	enabled = false
+}
