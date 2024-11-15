@@ -24,7 +24,7 @@ public abstract class AbstractSearchService implements SearchStrategy {
         if (matches.isEmpty()) {
             return buildNoMatchResponse(responseBuilder);
         } else if (matches.size() == 1) {
-            return matchResponseBuilder.buildSingleMatchResponse(responseBuilder, matches.getFirst(), request);
+            return matchResponseBuilder.buildSingleMatchResponse(responseBuilder, matches.get(0), request);
         } else {
             return matchResponseBuilder.buildMultipleMatchResponse(responseBuilder, matches);
         }

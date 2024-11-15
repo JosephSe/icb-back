@@ -44,7 +44,7 @@ public class LEVDataLoader {
                 String line;
                 br.readLine(); // Skip header
                 while ((line = br.readLine()) != null) {
-                    String[] values = line.split(",");
+                    String[] values = line.split(",", 7);
                     records.add(new LEVRecord(values[0], values[1], values[2], LocalDate.parse(values[3], formatter), values[4], values[5], values[6]));
                 }
             }
