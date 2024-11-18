@@ -18,7 +18,7 @@ public class ICBMatch {
         public ICBMatchBuilder matches(String firstNameMatched, String lastNameMatched, String middleNameMatched,
                                        String dateOfBirthMatched, String addressMatched, String birthCertificateMatched,
                                        String drivingLicenseNumberMatched, String passportNumber) {
-            matches = List.of(
+            matches = new ArrayList<>(List.of(
                     Pair.of("First Name", firstNameMatched),
                     Pair.of("Last Name", lastNameMatched),
                     Pair.of("Middle Name", middleNameMatched),
@@ -27,7 +27,7 @@ public class ICBMatch {
                     Pair.of("Unique Identifier - Birth Cert", birthCertificateMatched),
                     Pair.of("Driving Licence Number", drivingLicenseNumberMatched),
                     Pair.of("Passport Number", passportNumber)
-            );
+            ));
             return this;
         }
         public ICBMatchBuilder matches(String firstNameMatched, String lastNameMatched, String middleNameMatched,
@@ -35,9 +35,7 @@ public class ICBMatch {
                                        String drivingLicenseNumberMatched, String passportNumber, String flag) {
             ICBMatchBuilder builder = matches(firstNameMatched, lastNameMatched, middleNameMatched, dateOfBirthMatched, addressMatched, birthCertificateMatched, drivingLicenseNumberMatched, passportNumber);
             if (StringUtils.hasText(flag)) {
-                List<Pair<String, String>> mutableList = new ArrayList<>(builder.matches);
-                mutableList.add(Pair.of("Flag", flag));
-                matches = mutableList;
+                matches.add(Pair.of("Flag", flag));
             }
             return this;
         }
