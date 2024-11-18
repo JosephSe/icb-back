@@ -14,7 +14,7 @@ public class DrivingLicenceRecord implements SearchDataType {
     private LocalDate dateOfBirth;
     private String address;
     private String drivingLicenseNumber;
-    private String photoBase64;
+    private String photo;
 
     public DrivingLicenceRecord(String firstName, String middleName, String lastName, LocalDate dateOfBirth, String address, String drivingLicenseNumber) {
 //        super(firstName, middleName, lastName, dateOfBirth, address);
