@@ -13,6 +13,8 @@ import java.util.List;
 public class ICBMatch {
     private List<Pair<String, String>> matches;
     private List<String> verifications;
+    private boolean isFullRecordAvailable;
+    private ICBMatchRecord icbMatchRecord;
 
     public static class ICBMatchBuilder {
         public ICBMatchBuilder matches(String firstNameMatched, String lastNameMatched, String middleNameMatched,

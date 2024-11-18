@@ -87,6 +87,15 @@ public class DVLAService extends AbstractSearchService {
                             matchDriverLicense(request, dlRecord),
                             "-"
                     )
+                    .isFullRecordAvailable(true)
+                    .icbMatchRecord(ICBMatchRecord.builder()
+                            .firstName(dlRecord.getFirstName())
+                            .lastName(dlRecord.getLastName())
+                            .middleName(dlRecord.getMiddleName())
+                            .dateOfBirth(dlRecord.getDateOfBirth())
+                            .address(dlRecord.getAddress())
+                            .drivingLicenseNumber(dlRecord.getDrivingLicenseNumber())
+                            .build())
                     .build();
 
             return responseBuilder.matchStatus("One match found")
