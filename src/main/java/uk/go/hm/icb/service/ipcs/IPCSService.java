@@ -78,7 +78,6 @@ public class IPCSService extends AbstractSearchService {
                                     .map(SearchIdentifiers::getIdValue)
                                     .orElse(null),
                                 ipcsRecord.getPassportNumber())
-
                     )
                     .build();
 
