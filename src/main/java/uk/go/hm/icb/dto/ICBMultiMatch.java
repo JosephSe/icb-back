@@ -17,4 +17,5 @@ public class ICBMultiMatch {
     private String birthCertificate;
     private String passportNumber;
     private String flag;
+    private String fileName;
 }

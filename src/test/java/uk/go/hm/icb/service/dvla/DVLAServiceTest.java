@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.go.hm.icb.dto.DrivingLicenceRecord;
 import uk.go.hm.icb.dto.ICBRequest;
 import uk.go.hm.icb.dto.ICBResponse;
 import uk.go.hm.icb.dto.SearchBioDetails;
@@ -75,6 +74,8 @@ class DVLAServiceTest {
         assertEquals("YES", response.getMatch().getMatches().get(6).getSecond());
         //IPCS matched
         assertEquals("-", response.getMatch().getMatches().get(7).getSecond());
+        //image Path
+        assertEquals("/photos/Person.jpg", response.getMatch().getIcbMatchRecord().getFileName());
     }
 
     @Test

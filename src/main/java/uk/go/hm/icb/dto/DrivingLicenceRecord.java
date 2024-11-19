@@ -14,9 +14,9 @@ public class DrivingLicenceRecord implements SearchDataType {
     private LocalDate dateOfBirth;
     private String address;
     private String drivingLicenseNumber;
-    private String photo;
+    private String fileName;
 
-    public DrivingLicenceRecord(String firstName, String middleName, String lastName, LocalDate dateOfBirth, String address, String drivingLicenseNumber) {
+    public DrivingLicenceRecord(String firstName, String middleName, String lastName, LocalDate dateOfBirth, String address, String drivingLicenseNumber, String fileName) {
 //        super(firstName, middleName, lastName, dateOfBirth, address);
         this.firstName = firstName;
         this.middleName = middleName;
@@ -24,5 +24,6 @@ public class DrivingLicenceRecord implements SearchDataType {
         this.dateOfBirth = dateOfBirth;
         this.address = address;
         this.drivingLicenseNumber = drivingLicenseNumber;
+        this.fileName = fileName;
     }
 }
