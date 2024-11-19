@@ -18,5 +18,5 @@ public class ICBMatchRecord implements SearchDataType {
     private String drivingLicenseNumber;
     private String passportNumber;
     private String birthCertificate;
-    private String photo;
+    private String fileName;
 }

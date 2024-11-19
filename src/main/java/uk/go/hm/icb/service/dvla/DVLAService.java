@@ -95,6 +95,7 @@ public class DVLAService extends AbstractSearchService {
                             .dateOfBirth(dlRecord.getDateOfBirth())
                             .address(dlRecord.getAddress())
                             .drivingLicenseNumber(dlRecord.getDrivingLicenseNumber())
+                            .fileName(dlRecord.getFileName())
                             .build())
                     .build();
 
@@ -127,6 +128,7 @@ public class DVLAService extends AbstractSearchService {
                     .dateOfBirth(record.getDateOfBirth())
                     .address(record.getAddress())
                     .drivingLicenseNumber(record.getDrivingLicenseNumber())
+                    .fileName(record.getFileName())
                     .build();
         }
     }

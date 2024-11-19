@@ -34,7 +34,7 @@ public class TestDVLADataLoader {
             List<String[]> rows = reader.readAll();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             for (String[] row : rows) {
-                testRecords.add(new DrivingLicenceRecord(row[0].trim(), row[1].trim(), row[2].trim(), LocalDate.parse( row[3], formatter),row[4].trim(), row[5].trim()));
+                testRecords.add(new DrivingLicenceRecord(row[0].trim(), row[1].trim(), row[2].trim(), LocalDate.parse( row[3], formatter),row[4].trim(), row[5].trim(), row[6].trim()));
             }
         } catch (IOException | CsvException e) {
             throw new RuntimeException("Failed to load test data", e);
