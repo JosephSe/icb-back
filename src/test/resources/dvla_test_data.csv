@@ -1,4 +1,4 @@
-xfirstName,middleName,lastName,dateOfBirth,address,drivingLicenseNumber,fileName
+firstName,middleName,lastName,dateOfBirth,address,drivingLicenseNumber,fileName
 John,A.,Doe,14-05-1990,123 Baker Street London NW1 6XE,D12345678,"/photos/Person.jpg"
 Jane,B.,Smith,23-11-1985,456 High Street Manchester M1 2AB,D87654321,"/photos/Person.jpg"
 Jan,B.,Smith,23-11-1980,456 High Street Manchester M1 2AB,D87654322,"/photos/Person.jpg"
