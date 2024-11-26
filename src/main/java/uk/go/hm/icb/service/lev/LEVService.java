@@ -9,6 +9,7 @@ import uk.go.hm.icb.service.AbstractSearchService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class LEVService extends AbstractSearchService {
@@ -71,6 +72,7 @@ public class LEVService extends AbstractSearchService {
         public ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
                                                   Object record,
                                                   ICBRequest request) {
+            Random random = new Random();
             LEVRecord levRecord = (LEVRecord) record;
             SearchBioDetails bioDetails = request.getSearchBioDetails();
 
@@ -92,6 +94,7 @@ public class LEVService extends AbstractSearchService {
                             "-",
                             levRecord.getFlag()
                     )
+                    .verification(String.format("Match %s", 50+random.nextInt(31)+"%"))
                     .build();
 
             return responseBuilder.matchStatus("One match found")
