@@ -79,6 +79,7 @@ public class IPCSService extends AbstractSearchService {
                                     .orElse(null),
                                 ipcsRecord.getPassportNumber())
                     )
+                    .verification("Match 100%")
                     .build();
 
             return responseBuilder
