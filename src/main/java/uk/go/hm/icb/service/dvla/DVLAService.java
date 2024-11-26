@@ -8,6 +8,7 @@ import uk.go.hm.icb.service.AbstractSearchService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class DVLAService extends AbstractSearchService {
@@ -73,6 +74,7 @@ public class DVLAService extends AbstractSearchService {
         public ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
                                                   Object record,
                                                   ICBRequest request) {
+            Random random = new Random();
             DrivingLicenceRecord dlRecord = (DrivingLicenceRecord) record;
             SearchBioDetails bioDetails = request.getSearchBioDetails();
 
@@ -87,6 +89,7 @@ public class DVLAService extends AbstractSearchService {
                             matchDriverLicense(request, dlRecord),
                             "-"
                     )
+                    .verification(String.format("Match %s", 81+random.nextInt(20)+"%"))
                     .isFullRecordAvailable(true)
                     .icbMatchRecord(ICBMatchRecord.builder()
                             .firstName(dlRecord.getFirstName())
