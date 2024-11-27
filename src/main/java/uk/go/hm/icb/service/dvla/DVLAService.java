@@ -55,13 +55,18 @@ public class DVLAService extends AbstractSearchService {
     private List<DrivingLicenceRecord> filterByBioDetails(List<DrivingLicenceRecord> records,
                                                           SearchBioDetails bioDetails) {
         return records.stream()
-                .filter(rec -> Optional.ofNullable(bioDetails.getFirstName())
-                        .map(firstName -> firstName.equalsIgnoreCase(rec.getFirstName()))
-                        .orElse(false))
-                .filter(rec -> Optional.ofNullable(bioDetails.getLastName())
-                        .map(lastName -> lastName.equalsIgnoreCase(rec.getLastName()))
-                        .orElse(false))
+                .filter(rec -> matchesBioDetails(rec, bioDetails))
                 .toList();
+    }
+
+    private boolean matchesBioDetails(DrivingLicenceRecord record, SearchBioDetails bioDetails) {
+        return Optional.ofNullable(bioDetails.getFirstName())
+                .map(firstName -> firstName.equalsIgnoreCase(record.getFirstName()))
+                .orElse(false)
+                &&
+                Optional.ofNullable(bioDetails.getLastName())
+                        .map(lastName -> lastName.equalsIgnoreCase(record.getLastName()))
+                        .orElse(false);
     }
 
     private String matchDriverLicense(ICBRequest request, DrivingLicenceRecord record) {
