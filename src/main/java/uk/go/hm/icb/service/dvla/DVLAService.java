@@ -42,7 +42,7 @@ public class DVLAService extends AbstractSearchService {
             }
         }
 
-        return filterByLastName(records, request.getSearchBioDetails());
+        return filterByBioDetails(records, request.getSearchBioDetails());
     }
 
     private List<DrivingLicenceRecord> filterByLicenseNumber(List<DrivingLicenceRecord> records,
@@ -52,13 +52,21 @@ public class DVLAService extends AbstractSearchService {
                 .toList();
     }
 
-    private List<DrivingLicenceRecord> filterByLastName(List<DrivingLicenceRecord> records,
-                                                        SearchBioDetails bioDetails) {
+    private List<DrivingLicenceRecord> filterByBioDetails(List<DrivingLicenceRecord> records,
+                                                          SearchBioDetails bioDetails) {
         return records.stream()
-                .filter(rec -> Optional.ofNullable(bioDetails.getLastName())
-                        .map(lastName -> lastName.equalsIgnoreCase(rec.getLastName()))
-                        .orElse(false))
+                .filter(rec -> matchesBioDetails(rec, bioDetails))
                 .toList();
+    }
+
+    private boolean matchesBioDetails(DrivingLicenceRecord record, SearchBioDetails bioDetails) {
+        return Optional.ofNullable(bioDetails.getFirstName())
+                .map(firstName -> firstName.equalsIgnoreCase(record.getFirstName()))
+                .orElse(false)
+                &&
+                Optional.ofNullable(bioDetails.getLastName())
+                        .map(lastName -> lastName.equalsIgnoreCase(record.getLastName()))
+                        .orElse(false);
     }
 
     private String matchDriverLicense(ICBRequest request, DrivingLicenceRecord record) {
@@ -85,9 +93,10 @@ public class DVLAService extends AbstractSearchService {
                             matchField(bioDetails.getMiddleName(), dlRecord.getMiddleName()),
                             matchDateField(bioDetails.getDateOfBirth(), dlRecord.getDateOfBirth()),
                             "-",
-                            "-",
+                            null,
                             matchDriverLicense(request, dlRecord),
-                            "-"
+                            null,
+                            null
                     )
                     .verification(String.format("Match %s", 81+random.nextInt(20)+"%"))
                     .isFullRecordAvailable(true)

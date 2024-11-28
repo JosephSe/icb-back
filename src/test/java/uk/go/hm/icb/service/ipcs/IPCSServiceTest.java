@@ -78,9 +78,7 @@ class IPCSServiceTest {
         assertEquals("-", response.getMatch().getMatches().get(2).getSecond()); // middle name match
         assertEquals("-", response.getMatch().getMatches().get(3).getSecond()); // dob match
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond()); // address match
-        assertEquals("-", response.getMatch().getMatches().get(5).getSecond()); // lev match
-        assertEquals("-", response.getMatch().getMatches().get(6).getSecond()); // dvla match
-        assertEquals("YES", response.getMatch().getMatches().get(7).getSecond()); // passport number match
+        assertEquals("YES", response.getMatch().getMatches().get(5).getSecond()); // passport number match
     }
 
     @Test

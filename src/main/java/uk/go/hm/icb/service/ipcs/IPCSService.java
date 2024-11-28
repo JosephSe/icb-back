@@ -71,13 +71,15 @@ public class IPCSService extends AbstractSearchService {
                             "-",
                             "-",
                             "-",
-                            "-",
-                            "-",
+                            null,
+                            null,
                             matchField(
                                 findIdentifierByType(request, SearchIDType.IPCS_PPT_NUM)
                                     .map(SearchIdentifiers::getIdValue)
                                     .orElse(null),
-                                ipcsRecord.getPassportNumber())
+                                ipcsRecord.getPassportNumber()),
+                            null
+
                     )
                     .verification("Match 100%")
                     .build();

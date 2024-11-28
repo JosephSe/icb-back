@@ -45,8 +45,8 @@ public abstract class AbstractSearchService implements SearchStrategy {
     }
 
     protected String matchDateField(LocalDate requestDate, LocalDate recordDate) {
-        return Optional.ofNullable(recordDate)
-                .map(date -> date.isEqual(Optional.ofNullable(requestDate).orElse(LocalDate.now())))
+        return Optional.ofNullable(requestDate)
+                .map(date -> date.isEqual(Optional.ofNullable(recordDate).orElse(LocalDate.now())))
                 .map(matches -> matches ? "YES" : "NO")
                 .orElse("-");
     }

@@ -60,10 +60,9 @@ public class LEVService extends AbstractSearchService {
                 .filter(rec -> Optional.ofNullable(bioDetails.getFirstName())
                         .map(f -> f.equalsIgnoreCase(rec.getFirstName()))
                         .orElse(false))
-                .filter(rec -> rec.getDateOfBirth().isEqual(
-                        Optional.of(bioDetails)
-                                .map(SearchBioDetails::getDateOfBirth)
-                                .orElse(LocalDate.now())))
+//                .filter(rec -> rec.getDateOfBirth().isEqual(Optional.of(bioDetails)
+//                                .map(SearchBioDetails::getDateOfBirth)
+//                                .orElse(LocalDate.now())))
                 .toList();
     }
 
@@ -90,8 +89,8 @@ public class LEVService extends AbstractSearchService {
                             matchDateField(bioDetails.getDateOfBirth(), levRecord.getDateOfBirth()),
                             "-",
                             birthCertMatch,
-                            "-",
-                            "-",
+                            null,
+                            null,
                             levRecord.getFlag()
                     )
                     .verification(String.format("Match %s", 50+random.nextInt(31)+"%"))

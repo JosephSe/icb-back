@@ -65,15 +65,13 @@ class DVLAServiceTest {
         //Middle Name
         assertEquals("-", response.getMatch().getMatches().get(2).getSecond());
         //DOB
-        assertEquals("NO", response.getMatch().getMatches().get(3).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(3).getSecond());
         //Address
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //LEV matched
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //DL matched
-        assertEquals("YES", response.getMatch().getMatches().get(6).getSecond());
-        //IPCS matched
-        assertEquals("-", response.getMatch().getMatches().get(7).getSecond());
+        assertEquals("YES", response.getMatch().getMatches().get(5).getSecond());
         //image Path
         assertEquals("/photos/Person.jpg", response.getMatch().getIcbMatchRecord().getFileName());
     }
@@ -104,15 +102,11 @@ class DVLAServiceTest {
         //Middle Name
         assertEquals("-", response.getMatch().getMatches().get(2).getSecond());
         //DOB
-        assertEquals("NO", response.getMatch().getMatches().get(3).getSecond());
+        assertEquals("-", response.getMatch().getMatches().get(3).getSecond());
         //Address
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
         //LEV matched
         assertEquals("-", response.getMatch().getMatches().get(4).getSecond());
-        //DL matched
-        assertEquals("-", response.getMatch().getMatches().get(6).getSecond());
-        //IPCS matched
-        assertEquals("-", response.getMatch().getMatches().get(7).getSecond());
     }
 
     @Test
@@ -192,6 +186,7 @@ class DVLAServiceTest {
 
         ICBRequest request = ICBRequest.builder()
                 .searchBioDetails(SearchBioDetails.builder()
+                        .firstName("John")
                         .lastName("Doe")
                         .build())
                 .searchIDTypes(List.of(driverLicense))
