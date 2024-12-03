@@ -3,6 +3,7 @@ package uk.go.hm.icb.service.lev;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.go.hm.icb.dto.*;
 import uk.go.hm.icb.service.AbstractSearchService;
 
@@ -17,7 +18,7 @@ public class LEVService extends AbstractSearchService {
     private final LEVDataLoader dataLoaderService;
 
     @Autowired
-    public LEVService(LEVDataLoader dataLoaderService, @Value("${app.lev.delay}") long delay) {
+    public LEVService(LEVDataLoader dataLoaderService, @Value("${app.delay.lev}") long delay) {
         super(delay);
         this.dataLoaderService = dataLoaderService;
     }
@@ -69,8 +70,8 @@ public class LEVService extends AbstractSearchService {
     private class LEVMatchResponseBuilder implements MatchResponseBuilder {
         @Override
         public ICBResponse buildSingleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
-                                                  Object record,
-                                                  ICBRequest request) {
+                                                    Object record,
+                                                    ICBRequest request) {
             Random random = new Random();
             LEVRecord levRecord = (LEVRecord) record;
             SearchBioDetails bioDetails = request.getSearchBioDetails();
@@ -93,7 +94,17 @@ public class LEVService extends AbstractSearchService {
                             null,
                             levRecord.getFlag()
                     )
-                    .verification(String.format("Match %s", 50+random.nextInt(31)+"%"))
+                    .verification(String.format("Match %s", 50 + random.nextInt(31) + "%"))
+                    // Add LEV-specific matches
+                    .addMatch("Mother's Name", levRecord.getMotherName())
+                    .addMatch("Mother's Maiden Name", levRecord.getMotherMaidenName())
+                    .addMatch("Mother's Place of Birth", levRecord.getMotherPlaceOfBirth())
+                    .addMatch("Father's Name", levRecord.getFatherName())
+                    .addMatch("Father's Place of Birth", levRecord.getFatherPlaceOfBirth())
+                    .addMatch("Registration District", levRecord.getRegistrationDistrict())
+                    .addMatch("Sub District", levRecord.getSubDistrict())
+                    .addMatch("Administrative Area", levRecord.getAdministrativeArea())
+                    .addMatch("Date of Registration", levRecord.getDateOfRegistration().toString())
                     .build();
 
             return responseBuilder.matchStatus("One match found")
@@ -104,7 +115,7 @@ public class LEVService extends AbstractSearchService {
 
         @Override
         public ICBResponse buildMultipleMatchResponse(ICBResponse.ICBResponseBuilder responseBuilder,
-                                                    List<?> matches) {
+                                                      List<?> matches) {
             List<LEVRecord> levMatches = (List<LEVRecord>) matches;
             List<ICBMultiMatch> multiMatches = levMatches.stream()
                     .map(this::createMultiMatch)
