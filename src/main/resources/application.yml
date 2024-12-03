@@ -24,9 +24,7 @@ server:
 
 
 app:
-  dvla:
-    delay: 2000
-  lev:
-    delay: 5000
-  ipcs:
-    delay: 1000
+  delay:
+    lev: 3000
+    dvla: 1500
+    ipcs: 1000

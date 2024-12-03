@@ -15,7 +15,7 @@ public class IPCSService extends AbstractSearchService {
     private final IPCSDataLoader recordLoader;
 
     @Autowired
-    public IPCSService(IPCSDataLoader recordLoader, @Value("${app.ipcs.delay}") long delay) {
+    public IPCSService(IPCSDataLoader recordLoader, @Value("${app.delay.ipcs}") long delay) {
         super(delay);
         this.recordLoader = recordLoader;
     }

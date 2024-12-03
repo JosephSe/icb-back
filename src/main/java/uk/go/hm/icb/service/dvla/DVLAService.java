@@ -16,7 +16,7 @@ public class DVLAService extends AbstractSearchService {
     private final DVLADataLoader recordLoader;
 
     @Autowired
-    public DVLAService(DVLADataLoader recordLoader, @Value("${app.dvla.delay}") long delay) {
+    public DVLAService(DVLADataLoader recordLoader, @Value("${app.delay.dvla}") long delay) {
         super(delay);
         this.recordLoader = recordLoader;
     }
