@@ -19,4 +19,15 @@ public class ICBMatchRecord implements SearchDataType {
     private String passportNumber;
     private String birthCertificate;
     private String fileName;
+    // LEV details
+    private String flag;
+    private String motherName;
+    private String motherMaidenName;
+    private String motherPlaceOfBirth;
+    private String fatherName;
+    private String fatherPlaceOfBirth;
+    private String registrationDistrict;
+    private String subDistrict;
+    private String administrativeArea;
+    private LocalDate dateOfRegistration;
 }

@@ -3,11 +3,9 @@ package uk.go.hm.icb.service.lev;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import uk.go.hm.icb.dto.*;
 import uk.go.hm.icb.service.AbstractSearchService;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -96,21 +94,36 @@ public class LEVService extends AbstractSearchService {
                     )
                     .verification(String.format("Match %s", 50 + random.nextInt(31) + "%"))
                     // Add LEV-specific matches
-                    .addMatch("Mother's Name", levRecord.getMotherName())
-                    .addMatch("Mother's Maiden Name", levRecord.getMotherMaidenName())
-                    .addMatch("Mother's Place of Birth", levRecord.getMotherPlaceOfBirth())
-                    .addMatch("Father's Name", levRecord.getFatherName())
-                    .addMatch("Father's Place of Birth", levRecord.getFatherPlaceOfBirth())
-                    .addMatch("Registration District", levRecord.getRegistrationDistrict())
-                    .addMatch("Sub District", levRecord.getSubDistrict())
-                    .addMatch("Administrative Area", levRecord.getAdministrativeArea())
-                    .addMatch("Date of Registration", levRecord.getDateOfRegistration().toString())
+                    .icbMatchRecord(buildMatchRecord(levRecord))
+                    .isFullRecordAvailable(true)
                     .build();
 
             return responseBuilder.matchStatus("One match found")
                     .match(match)
                     .searchComplete(true)
                     .build();
+        }
+
+        private ICBMatchRecord buildMatchRecord(LEVRecord levRecord) {
+            return ICBMatchRecord.builder()
+                    .firstName(levRecord.getFirstName())
+                    .lastName(levRecord.getLastName())
+                    .middleName(levRecord.getMiddleName())
+                    .dateOfBirth(levRecord.getDateOfBirth())
+                    .address(levRecord.getAddress())
+                    .birthCertificate(levRecord.getBirthCertificate())
+                    .flag(levRecord.getFlag())
+                    .motherName(levRecord.getMotherName())
+                    .motherMaidenName(levRecord.getMotherMaidenName())
+                    .motherPlaceOfBirth(levRecord.getMotherPlaceOfBirth())
+                    .fatherName(levRecord.getFatherName())
+                    .fatherPlaceOfBirth(levRecord.getFatherPlaceOfBirth())
+                    .registrationDistrict(levRecord.getRegistrationDistrict())
+                    .subDistrict(levRecord.getSubDistrict())
+                    .administrativeArea(levRecord.getAdministrativeArea())
+                    .dateOfRegistration(levRecord.getDateOfRegistration())
+                    .build();
+
         }
 
         @Override
