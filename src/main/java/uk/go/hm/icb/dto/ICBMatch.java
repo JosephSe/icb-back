@@ -50,5 +50,12 @@ public class ICBMatch {
             verifications.add(verification);
             return this;
         }
+        public ICBMatchBuilder addMatch(String key, String value) {
+            if (matches == null) {
+                matches = new ArrayList<>();
+            }
+            matches.add(Pair.of(key, value));
+            return this;
+        }
     }
 }

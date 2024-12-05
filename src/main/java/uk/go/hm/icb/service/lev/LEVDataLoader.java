@@ -44,12 +44,29 @@ public class LEVDataLoader {
                 String line;
                 br.readLine(); // Skip header
                 while ((line = br.readLine()) != null) {
-                    String[] values = line.split(",", 7);
-                    records.add(new LEVRecord(values[0], values[1], values[2], LocalDate.parse(values[3], formatter), values[4], values[5], values[6]));
+                    String[] values = line.split(",", -1);
+                    records.add(new LEVRecord(
+                        values[0],  // firstName
+                        values[1],  // middleName
+                        values[2],  // lastName
+                        LocalDate.parse(values[3], formatter),  // dateOfBirth
+                        values[4],  // address
+                        values[5],  // birthCertificateNumber
+                        values[6],  // flag
+                        values[7],  // motherName
+                        values[8],  // motherMaidenName
+                        values[9],  // motherPlaceOfBirth
+                        values[10], // fatherName
+                        values[11], // fatherPlaceOfBirth
+                        values[12], // registrationDistrict
+                        values[13], // subDistrict
+                        values[14], // administrativeArea
+                        LocalDate.parse(values[15], formatter) // dateOfRegistration
+                    ));
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error loading driving licence records ", e);
+            throw new RuntimeException("Error loading LEV records ", e);
         }
     }
 
