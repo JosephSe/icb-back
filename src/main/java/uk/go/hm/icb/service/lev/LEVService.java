@@ -92,7 +92,7 @@ public class LEVService extends AbstractSearchService {
                             null,
                             levRecord.getFlag()
                     )
-                    .verification(String.format("Match %s", 50 + random.nextInt(31) + "%"))
+//                    .verification(String.format("Match %s", 50 + random.nextInt(31) + "%"))
                     // Add LEV-specific matches
                     .icbMatchRecord(buildMatchRecord(levRecord))
                     .isFullRecordAvailable(true)

@@ -30,4 +30,6 @@ public class ICBMatchRecord implements SearchDataType {
     private String subDistrict;
     private String administrativeArea;
     private LocalDate dateOfRegistration;
+    // IPCS details
+    private String serverResponse;
 }

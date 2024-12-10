@@ -98,7 +98,7 @@ public class DVLAService extends AbstractSearchService {
                             null,
                             null
                     )
-                    .verification(String.format("Match %s", 81+random.nextInt(20)+"%"))
+//                    .verification(String.format("Match %s", 81+random.nextInt(20)+"%"))
                     .isFullRecordAvailable(true)
                     .icbMatchRecord(ICBMatchRecord.builder()
                             .firstName(dlRecord.getFirstName())
