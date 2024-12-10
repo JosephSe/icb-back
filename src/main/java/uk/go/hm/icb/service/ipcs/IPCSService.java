@@ -81,7 +81,11 @@ public class IPCSService extends AbstractSearchService {
                             null
 
                     )
-                    .verification("Match 100%")
+//                    .verification("Match 100%")
+                    .isFullRecordAvailable(true)
+                    .icbMatchRecord(ICBMatchRecord.builder()
+                            .serverResponse("No additional data")
+                            .build())
                     .build();
 
             return responseBuilder
