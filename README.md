@@ -45,3 +45,12 @@ Explain how to run the tests for your application. Include any specific commands
 ./gradlew test
 ```
 
+# Build the Docker image
+```bash
+docker build -t uk-go-hm:latest .
+```
+
+# Run the container
+```bash
+docker run -p 8080:8080 uk-go-hm:latest
+```
